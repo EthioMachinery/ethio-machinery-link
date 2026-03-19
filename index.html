@@ -1,34 +1,206 @@
-<!-- ONLY SHOWING KEY ADDITIONS — FULL CODE ALREADY INTEGRATED BELOW -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Ethio Machinery Link (EML)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- ADD THIS ABOVE LISTINGS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body { font-family: Arial; background:#111; color:white; text-align:center; }
+header { background:#f4b400; padding:20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+button { margin:8px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
+input, select, textarea {
+  margin:8px; padding:10px; width:85%; max-width:350px;
+  border-radius:6px; border:none;
+}
+.section { margin-top:30px; }
+.card {
+  background:#222; margin:10px auto; padding:15px;
+  width:90%; max-width:400px; border-radius:10px; text-align:left;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<svg width="80" height="80" viewBox="0 0 100 100">
+  <rect x="10" y="10" width="5" height="60" fill="black"/>
+  <line x1="10" y1="10" x2="70" y2="10" stroke="black" stroke-width="3"/>
+  <line x1="70" y1="10" x2="70" y2="40" stroke="black" stroke-width="2"/>
+  <rect x="40" y="60" width="30" height="10" fill="black"/>
+  <circle cx="45" cy="75" r="5" fill="black"/>
+  <circle cx="65" cy="75" r="5" fill="black"/>
+  <line x1="50" y1="60" x2="70" y2="45" stroke="black" stroke-width="3"/>
+  <line x1="70" y1="45" x2="80" y2="50" stroke="black" stroke-width="3"/>
+</svg>
+
+<div style="font-size:22px;font-weight:bold;">ኢትዮ ማሽነሪ አገናኝ</div>
+<div>Ethio Machinery Link (EML)</div>
+</header>
+
+<button id="langBtn">🌐 Switch Language</button>
+
+<div class="section">
+<h2 id="postTitle">Post Listing</h2>
+
+<select id="type"></select>
+<input id="title" />
+
+<div id="machineFields" style="display:none;">
+<input id="model_number" />
+<input id="year" />
+<select id="condition"></select>
+<input id="capacity" />
+<select id="fuel_type"></select>
+</div>
+
+<div id="serviceFields" style="display:none;">
+<select id="service_type"></select>
+<textarea id="details"></textarea>
+</div>
+
+<select id="category"></select>
+
+<input id="price" />
+<input id="location" />
+<input id="phone" />
+
+<textarea id="description"></textarea>
+
+<button id="submitBtn">Submit</button>
+</div>
+
+<div class="section">
+<h2 id="browseTitle">Browse</h2>
+
 <input id="searchInput" placeholder="Search..." oninput="loadListings()" />
 
-<!-- MODIFY LOAD FUNCTION -->
-async function loadListings(){
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const filter = document.getElementById("filterType").value;
+<select id="filterType" onchange="loadListings()"></select>
 
-  let query = client.from("listings").select("*");
+<div id="listings"></div>
+</div>
 
-  if(filter){
-    query = query.eq("type", filter);
-  }
+<script>
+const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const {data} = await query;
+let currentLang = "en";
 
-  const c = document.getElementById("listings");
-  c.innerHTML = "";
-
-  data
-    .filter(item =>
-      item.title?.toLowerCase().includes(keyword) ||
-      item.category?.toLowerCase().includes(keyword) ||
-      item.location?.toLowerCase().includes(keyword)
-    )
-    .forEach(i=>{
-      const d=document.createElement("div");
-      d.className="card";
-      d.innerHTML = `<h3>${i.title}</h3><p>${i.price}</p><p>${i.location}</p>`;
-      c.appendChild(d);
-    });
+const T = {
+en:{
+post:"Post Listing",browse:"Browse",submit:"Submit",lang:"🌐 Switch Language",
+p:{title:"Title",price:"Price",location:"Location",phone:"Phone",desc:"Description"},
+type:[["","Select Type"],["rent","Rent"],["sell","Sell"],["service","Service"]],
+category:[["","Category"],["excavator","Excavator"],["crane","Crane"],["loader","Loader"],["other","Other"]],
+filter:[["","All"],["rent","Rent"],["sell","Sell"],["service","Service"]]
+},
+am:{
+post:"መረጃ አስገባ",browse:"መፈለጊያ",submit:"አስገባ",lang:"🌐 ቋንቋ ቀይር",
+p:{title:"ርዕስ",price:"ዋጋ",location:"ቦታ",phone:"ስልክ",desc:"መግለጫ"},
+type:[["","አይነት"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]],
+category:[["","ምድብ"],["excavator","ኤክስካቫተር"],["crane","ክሬን"],["loader","ሎደር"],["other","ሌላ"]],
+filter:[["","ሁሉም"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]]
 }
+};
+
+function setOptions(id, arr){
+const el=document.getElementById(id);
+const val=el.value;
+el.innerHTML="";
+arr.forEach(([v,t])=>{
+const o=document.createElement("option");
+o.value=v;o.textContent=t;
+if(v===val) o.selected=true;
+el.appendChild(o);
+});
+}
+
+function applyTranslations(){
+const t=T[currentLang];
+
+document.getElementById("postTitle").innerText=t.post;
+document.getElementById("browseTitle").innerText=t.browse;
+document.getElementById("submitBtn").innerText=t.submit;
+document.getElementById("langBtn").innerText=t.lang;
+
+document.getElementById("title").placeholder=t.p.title;
+document.getElementById("price").placeholder=t.p.price;
+document.getElementById("location").placeholder=t.p.location;
+document.getElementById("phone").placeholder=t.p.phone;
+document.getElementById("description").placeholder=t.p.desc;
+
+setOptions("type",t.type);
+setOptions("category",t.category);
+setOptions("filterType",t.filter);
+}
+
+function toggleLanguage(){
+currentLang=currentLang==="en"?"am":"en";
+applyTranslations();
+}
+
+function updateUI(){
+const type=document.getElementById("type").value;
+document.getElementById("machineFields").style.display =
+(type==="rent"||type==="sell")?"block":"none";
+document.getElementById("serviceFields").style.display =
+(type==="service")?"block":"none";
+}
+
+async function addListing(){
+await client.from("listings").insert([{
+type:document.getElementById("type").value,
+title:document.getElementById("title").value,
+category:document.getElementById("category").value,
+price:document.getElementById("price").value,
+location:document.getElementById("location").value,
+phone:document.getElementById("phone").value,
+description:document.getElementById("description").value
+}]);
+
+alert("Saved!");
+loadListings();
+}
+
+async function loadListings(){
+const keyword=document.getElementById("searchInput").value.toLowerCase();
+const filter=document.getElementById("filterType").value;
+
+let query=client.from("listings").select("*");
+if(filter){ query=query.eq("type",filter); }
+
+const {data}=await query;
+
+const c=document.getElementById("listings");
+c.innerHTML="";
+
+if(!data){ c.innerHTML="No data"; return; }
+
+data.filter(item =>
+item.title?.toLowerCase().includes(keyword) ||
+item.category?.toLowerCase().includes(keyword) ||
+item.location?.toLowerCase().includes(keyword)
+).forEach(i=>{
+const d=document.createElement("div");
+d.className="card";
+d.innerHTML=`<h3>${i.title}</h3><p>${i.price}</p><p>${i.location}</p>`;
+c.appendChild(d);
+});
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+document.getElementById("langBtn").addEventListener("click",toggleLanguage);
+document.getElementById("type").addEventListener("change",updateUI);
+document.getElementById("submitBtn").addEventListener("click",addListing);
+
+applyTranslations();
+loadListings();
+});
+</script>
+
+</body>
+</html>
