@@ -10,15 +10,18 @@
 <style>
 body { font-family: Arial; background:#111; color:white; text-align:center; }
 header { background:#f4b400; padding:20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
-button { margin:8px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
+button { margin:6px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
 input, select, textarea {
-  margin:8px; padding:10px; width:85%; max-width:350px;
+  margin:6px; padding:10px; width:85%; max-width:350px;
   border-radius:6px; border:none;
 }
-.section { margin-top:30px; }
+.section { margin-top:25px; }
 .card {
   background:#222; margin:10px auto; padding:15px;
   width:90%; max-width:400px; border-radius:10px; text-align:left;
+}
+.search-box {
+  display:flex; justify-content:center; gap:5px; flex-wrap:wrap;
 }
 </style>
 </head>
@@ -49,19 +52,6 @@ input, select, textarea {
 <select id="type"></select>
 <input id="title" />
 
-<div id="machineFields" style="display:none;">
-<input id="model_number" />
-<input id="year" />
-<select id="condition"></select>
-<input id="capacity" />
-<select id="fuel_type"></select>
-</div>
-
-<div id="serviceFields" style="display:none;">
-<select id="service_type"></select>
-<textarea id="details"></textarea>
-</div>
-
 <select id="category"></select>
 
 <input id="price" />
@@ -76,7 +66,10 @@ input, select, textarea {
 <div class="section">
 <h2 id="browseTitle">Browse</h2>
 
-<input id="searchInput" placeholder="Search..." oninput="loadListings()" />
+<div class="search-box">
+  <input id="searchInput" placeholder="Search..." />
+  <button onclick="loadListings()">Search</button>
+</div>
 
 <select id="filterType" onchange="loadListings()"></select>
 
@@ -93,14 +86,14 @@ let currentLang = "en";
 const T = {
 en:{
 post:"Post Listing",browse:"Browse",submit:"Submit",lang:"🌐 Switch Language",
-p:{title:"Title",price:"Price",location:"Location",phone:"Phone",desc:"Description"},
+p:{title:"Title",price:"Price",location:"Location",phone:"Phone",desc:"Description",search:"Search..."},
 type:[["","Select Type"],["rent","Rent"],["sell","Sell"],["service","Service"]],
 category:[["","Category"],["excavator","Excavator"],["crane","Crane"],["loader","Loader"],["other","Other"]],
 filter:[["","All"],["rent","Rent"],["sell","Sell"],["service","Service"]]
 },
 am:{
 post:"መረጃ አስገባ",browse:"መፈለጊያ",submit:"አስገባ",lang:"🌐 ቋንቋ ቀይር",
-p:{title:"ርዕስ",price:"ዋጋ",location:"ቦታ",phone:"ስልክ",desc:"መግለጫ"},
+p:{title:"ርዕስ",price:"ዋጋ",location:"ቦታ",phone:"ስልክ",desc:"መግለጫ",search:"ፈልግ..."},
 type:[["","አይነት"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]],
 category:[["","ምድብ"],["excavator","ኤክስካቫተር"],["crane","ክሬን"],["loader","ሎደር"],["other","ሌላ"]],
 filter:[["","ሁሉም"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]]
@@ -132,6 +125,7 @@ document.getElementById("price").placeholder=t.p.price;
 document.getElementById("location").placeholder=t.p.location;
 document.getElementById("phone").placeholder=t.p.phone;
 document.getElementById("description").placeholder=t.p.desc;
+document.getElementById("searchInput").placeholder=t.p.search;
 
 setOptions("type",t.type);
 setOptions("category",t.category);
@@ -141,14 +135,6 @@ setOptions("filterType",t.filter);
 function toggleLanguage(){
 currentLang=currentLang==="en"?"am":"en";
 applyTranslations();
-}
-
-function updateUI(){
-const type=document.getElementById("type").value;
-document.getElementById("machineFields").style.display =
-(type==="rent"||type==="sell")?"block":"none";
-document.getElementById("serviceFields").style.display =
-(type==="service")?"block":"none";
 }
 
 async function addListing(){
@@ -192,10 +178,14 @@ c.appendChild(d);
 });
 }
 
+// ENTER KEY SUPPORT
 document.addEventListener("DOMContentLoaded",()=>{
 document.getElementById("langBtn").addEventListener("click",toggleLanguage);
-document.getElementById("type").addEventListener("change",updateUI);
 document.getElementById("submitBtn").addEventListener("click",addListing);
+
+document.getElementById("searchInput").addEventListener("keypress",function(e){
+if(e.key==="Enter"){ loadListings(); }
+});
 
 applyTranslations();
 loadListings();
