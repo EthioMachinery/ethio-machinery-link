@@ -8,47 +8,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
-
-    header {
-      background: #f4b400;
-      padding: 20px;
-      color: black;
-      font-weight: bold;
-    }
-
+    body { font-family: Arial; background:#111; color:white; text-align:center; }
+    header { background:#f4b400; padding:20px; color:black; font-weight:bold; }
     input, select, textarea, button {
-      margin: 8px;
-      padding: 10px;
-      width: 85%;
-      max-width: 350px;
-      border-radius: 6px;
-      border: none;
+      margin:8px; padding:10px; width:85%; max-width:350px;
+      border-radius:6px; border:none;
     }
-
-    button {
-      background: #f4b400;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .section {
-      margin-top: 30px;
-    }
-
+    button { background:#f4b400; font-weight:bold; cursor:pointer; }
+    .section { margin-top:30px; }
     .card {
-      background: #222;
-      margin: 10px auto;
-      padding: 15px;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 10px;
-      text-align: left;
+      background:#222; margin:10px auto; padding:15px;
+      width:90%; max-width:400px; border-radius:10px; text-align:left;
     }
   </style>
 </head>
@@ -59,163 +29,199 @@
   ኢትዮ ማሽነሪ አገናኝ
 </header>
 
-<!-- POST SECTION -->
 <div class="section">
-  <h2>Post Machinery / Service</h2>
+<h2>Post Listing</h2>
 
-  <select id="type">
-    <option value="">Select Type</option>
-    <option value="rent">Rent</option>
-    <option value="sell">Sell</option>
-    <option value="service">Service</option>
+<select id="type">
+  <option value="">Select Type</option>
+  <option value="rent">Rent</option>
+  <option value="sell">Sell</option>
+  <option value="service">Service</option>
+</select>
+
+<input id="title" placeholder="Title" />
+
+<!-- MACHINE FIELDS -->
+<div id="machineFields" style="display:none;">
+  <input id="model_number" placeholder="Model Number" />
+  <input id="year" placeholder="Year" />
+  
+  <select id="condition">
+    <option value="">Condition</option>
+    <option>New</option>
+    <option>Used</option>
   </select>
 
-  <!-- SERVICE TYPE -->
-  <select id="serviceType" style="display:none;">
-    <option value="">Select Service Type</option>
+  <input id="capacity" placeholder="Capacity (e.g. 1.2m³)" />
+  
+  <select id="fuel_type">
+    <option value="">Fuel Type</option>
+    <option>Diesel</option>
+    <option>Petrol</option>
+    <option>Electric</option>
+  </select>
+
+  <input id="price_type" placeholder="Price Type (per day / fixed)" />
+  <input id="availability" placeholder="Availability" />
+</div>
+
+<!-- SERVICE FIELDS -->
+<div id="serviceFields" style="display:none;">
+  <select id="service_type">
+    <option value="">Service Type</option>
     <option value="mechanic">Mechanic</option>
     <option value="operator">Operator</option>
     <option value="transport">Transport</option>
     <option value="spare_parts">Spare Parts</option>
   </select>
 
-  <input id="title" placeholder="Title" />
-
-  <select id="category">
-    <option value="">Select Category</option>
-    <option>Excavator</option>
-    <option>Bulldozer</option>
-    <option>Crane</option>
-    <option>Loader</option>
-    <option>Generator</option>
-    <option>Other</option>
-  </select>
-
-  <input id="customCategory" placeholder="Specify category" style="display:none;" />
-
-  <input id="price" placeholder="Price (or rate)" />
-  <input id="location" placeholder="Location" />
-  <input id="phone" placeholder="Phone Number" />
-
-  <!-- DETAILS -->
-  <textarea id="details" placeholder="Service details (skills, experience, capacity...)" style="display:none;"></textarea>
-
-  <textarea id="description" placeholder="General Description"></textarea>
-
-  <button onclick="addListing()">Submit</button>
+  <textarea id="details" placeholder="Service details (skills, experience, etc.)"></textarea>
 </div>
 
-<!-- BROWSE -->
+<select id="category">
+  <option value="">Category</option>
+  <option>Excavator</option>
+  <option>Bulldozer</option>
+  <option>Crane</option>
+  <option>Loader</option>
+  <option>Generator</option>
+  <option>Other</option>
+</select>
+
+<input id="customCategory" placeholder="Specify category" style="display:none;" />
+
+<input id="price" placeholder="Price" />
+<input id="location" placeholder="Location" />
+<input id="phone" placeholder="Phone" />
+
+<textarea id="specs" placeholder="Detailed specifications (Model, Engine, Year...)"></textarea>
+<textarea id="description" placeholder="Description"></textarea>
+
+<button onclick="addListing()">Submit</button>
+</div>
+
 <div class="section">
-  <h2>Browse</h2>
+<h2>Browse</h2>
 
-  <select id="filterType">
-    <option value="">All</option>
-    <option value="rent">Rent</option>
-    <option value="sell">Sell</option>
-    <option value="service">Service</option>
-  </select>
+<select id="filterType">
+  <option value="">All</option>
+  <option value="rent">Rent</option>
+  <option value="sell">Sell</option>
+  <option value="service">Service</option>
+</select>
 
-  <div id="listings"></div>
+<div id="listings"></div>
 </div>
 
 <script>
-  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
+const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // UI CONTROL
-  function handleTypeChange() {
-    const type = document.getElementById('type').value;
-    const serviceType = document.getElementById('serviceType');
-    const details = document.getElementById('details');
+// UI CONTROL
+function updateUI() {
+  const type = document.getElementById('type').value;
 
-    if (type === "service") {
-      serviceType.style.display = "block";
-      details.style.display = "block";
-    } else {
-      serviceType.style.display = "none";
-      details.style.display = "none";
-    }
+  document.getElementById('machineFields').style.display =
+    (type === 'rent' || type === 'sell') ? 'block' : 'none';
+
+  document.getElementById('serviceFields').style.display =
+    (type === 'service') ? 'block' : 'none';
+}
+
+function handleCategory() {
+  const cat = document.getElementById('category').value;
+  document.getElementById('customCategory').style.display =
+    (cat === 'Other') ? 'block' : 'none';
+}
+
+// ADD LISTING
+async function addListing() {
+  const type = document.getElementById('type').value;
+  const title = document.getElementById('title').value;
+
+  let category = document.getElementById('category').value;
+  if (category === "Other") {
+    category = document.getElementById('customCategory').value;
   }
 
-  function handleCategoryChange() {
-    const category = document.getElementById('category').value;
-    const custom = document.getElementById('customCategory');
+  const data = {
+    type,
+    title,
+    category,
+    price: document.getElementById('price').value,
+    location: document.getElementById('location').value,
+    phone: document.getElementById('phone').value,
+    specs: document.getElementById('specs').value,
+    description: document.getElementById('description').value
+  };
 
-    if (category === "Other") {
-      custom.style.display = "block";
-    } else {
-      custom.style.display = "none";
-    }
+  if (type === 'service') {
+    data.service_type = document.getElementById('service_type').value;
+    data.details = document.getElementById('details').value;
+  } else {
+    data.model_number = document.getElementById('model_number').value;
+    data.year = document.getElementById('year').value;
+    data.condition = document.getElementById('condition').value;
+    data.capacity = document.getElementById('capacity').value;
+    data.fuel_type = document.getElementById('fuel_type').value;
+    data.price_type = document.getElementById('price_type').value;
+    data.availability = document.getElementById('availability').value;
   }
 
-  // ADD LISTING
-  async function addListing() {
-    const type = document.getElementById('type').value;
-    const service_type = document.getElementById('serviceType').value;
-    const title = document.getElementById('title').value;
+  await client.from('listings').insert([data]);
 
-    let category = document.getElementById('category').value;
-    const customCategory = document.getElementById('customCategory').value;
-    if (category === "Other") category = customCategory;
+  alert("Saved!");
+  loadListings();
+}
 
-    const price = document.getElementById('price').value;
-    const location = document.getElementById('location').value;
-    const phone = document.getElementById('phone').value;
-    const description = document.getElementById('description').value;
-    const details = document.getElementById('details').value;
+// LOAD
+async function loadListings() {
+  const filter = document.getElementById('filterType').value;
+  let query = client.from('listings').select('*');
+  if (filter) query = query.eq('type', filter);
 
-    await client.from('listings').insert([
-      { type, service_type, title, category, price, location, phone, description, details }
-    ]);
+  const { data } = await query;
+  const container = document.getElementById('listings');
+  container.innerHTML = "";
 
-    alert("Saved!");
-    loadListings();
-  }
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className = "card";
 
-  // LOAD LISTINGS
-  async function loadListings() {
-    const filter = document.getElementById('filterType').value;
+    div.innerHTML = `
+      <h3>${item.title} (${item.type})</h3>
+      <p><b>Category:</b> ${item.category}</p>
+      <p><b>Price:</b> ${item.price}</p>
+      <p><b>Location:</b> ${item.location}</p>
+      <p><b>Phone:</b> ${item.phone}</p>
 
-    let query = client.from('listings').select('*');
-    if (filter) query = query.eq('type', filter);
+      ${item.model_number ? `<p><b>Model:</b> ${item.model_number}</p>` : ""}
+      ${item.year ? `<p><b>Year:</b> ${item.year}</p>` : ""}
+      ${item.condition ? `<p><b>Condition:</b> ${item.condition}</p>` : ""}
+      ${item.capacity ? `<p><b>Capacity:</b> ${item.capacity}</p>` : ""}
 
-    const { data } = await query;
+      ${item.service_type ? `<p><b>Service:</b> ${item.service_type}</p>` : ""}
+      ${item.details ? `<p><b>Details:</b> ${item.details}</p>` : ""}
 
-    const container = document.getElementById('listings');
-    container.innerHTML = "";
+      <p>${item.description}</p>
+    `;
 
-    data.forEach(item => {
-      const div = document.createElement('div');
-      div.className = "card";
-
-      div.innerHTML = `
-        <h3>${item.title} (${item.type})</h3>
-        ${item.service_type ? `<p><b>Service:</b> ${item.service_type}</p>` : ""}
-        <p><b>Category:</b> ${item.category}</p>
-        <p><b>Price:</b> ${item.price}</p>
-        <p><b>Location:</b> ${item.location}</p>
-        <p><b>Phone:</b> ${item.phone}</p>
-        <p>${item.description}</p>
-        ${item.details ? `<p><b>Details:</b> ${item.details}</p>` : ""}
-      `;
-
-      container.appendChild(div);
-    });
-  }
-
-  // INIT (VERY IMPORTANT)
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('type').addEventListener('change', handleTypeChange);
-    document.getElementById('category').addEventListener('change', handleCategoryChange);
-    document.getElementById('filterType').addEventListener('change', loadListings);
-
-    handleTypeChange();
-    handleCategoryChange();
-    loadListings();
+    container.appendChild(div);
   });
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById('type').addEventListener('change', updateUI);
+  document.getElementById('category').addEventListener('change', handleCategory);
+  document.getElementById('filterType').addEventListener('change', loadListings);
+
+  updateUI();
+  handleCategory();
+  loadListings();
+});
 </script>
 
 </body>
