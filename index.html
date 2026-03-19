@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <title>Ethio Machinery Link (EML)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
   <style>
     body {
       font-family: Arial;
-      margin: 0;
       background: #111;
       color: white;
       text-align: center;
@@ -19,16 +21,12 @@
       font-size: 24px;
       font-weight: bold;
     }
-    button {
-      margin: 20px;
-      padding: 15px 25px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
     }
-    .post { background: #f4b400; }
-    .browse { background: #444; color: white; }
   </style>
 </head>
 <body>
@@ -38,10 +36,53 @@
   ኢትዮ ማሽነሪ አገናኝ
 </header>
 
-<h2>Find, Rent, Buy or Service Machinery in Ethiopia</h2>
+<h2>Post Machinery</h2>
 
-<button class="post">Post Machinery</button>
-<button class="browse">Browse Machinery</button>
+<input id="title" placeholder="Machine Title" />
+<input id="category" placeholder="Category" />
+<input id="price" placeholder="Price" />
+<input id="location" placeholder="Location" />
+
+<button onclick="addListing()">Submit</button>
+
+<h2>Listings</h2>
+<div id="listings"></div>
+
+<script>
+  const SUPABASE_URL = "PASTE_YOUR_URL_HERE";
+  const SUPABASE_KEY = "PASTE_YOUR_KEY_HERE";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function addListing() {
+    const title = document.getElementById('title').value;
+    const category = document.getElementById('category').value;
+    const price = document.getElementById('price').value;
+    const location = document.getElementById('location').value;
+
+    await client.from('listings').insert([
+      { title, category, price, location }
+    ]);
+
+    alert("Saved!");
+    loadListings();
+  }
+
+  async function loadListings() {
+    const { data } = await client.from('listings').select('*');
+
+    const container = document.getElementById('listings');
+    container.innerHTML = "";
+
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.innerHTML = `<p>${item.title} - ${item.price} - ${item.location}</p>`;
+      container.appendChild(div);
+    });
+  }
+
+  loadListings();
+</script>
 
 </body>
 </html>
