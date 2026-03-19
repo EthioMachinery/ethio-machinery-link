@@ -153,6 +153,7 @@ alert("Saved!");
 loadListings();
 }
 
+/* ✅ UPDATED FUNCTION WITH CONTACT SYSTEM */
 async function loadListings(){
 const keyword=document.getElementById("searchInput").value.toLowerCase();
 const filter=document.getElementById("filterType").value;
@@ -172,9 +173,38 @@ item.title?.toLowerCase().includes(keyword) ||
 item.category?.toLowerCase().includes(keyword) ||
 item.location?.toLowerCase().includes(keyword)
 ).forEach(i=>{
+
 const d=document.createElement("div");
 d.className="card";
-d.innerHTML=`<h3>${i.title}</h3><p>${i.price}</p><p>${i.location}</p>`;
+
+const phone = "251911404186";
+
+const message = encodeURIComponent(
+`Hello, I am interested in your "${i.title}" on Ethio Machinery Link`
+);
+
+d.innerHTML=`
+<h3>${i.title}</h3>
+<p>${i.price}</p>
+<p>${i.location}</p>
+
+<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;">
+  
+  <a href="tel:+${phone}">
+    <button>📞 Call</button>
+  </a>
+
+  <a href="https://wa.me/${phone}?text=${message}" target="_blank">
+    <button>💬 WhatsApp</button>
+  </a>
+
+  <a href="https://t.me/+${phone}" target="_blank">
+    <button>✈️ Telegram</button>
+  </a>
+
+</div>
+`;
+
 c.appendChild(d);
 });
 }
