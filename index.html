@@ -18,14 +18,29 @@
       background: #f4b400;
       padding: 20px;
       color: black;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
     }
-    input, button {
+    input, select, textarea, button {
       margin: 10px;
       padding: 10px;
-      width: 80%;
-      max-width: 300px;
+      width: 85%;
+      max-width: 350px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #f4b400;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .card {
+      background: #222;
+      margin: 15px auto;
+      padding: 15px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -38,10 +53,30 @@
 
 <h2>Post Machinery</h2>
 
+<select id="type">
+  <option value="">Select Type</option>
+  <option value="rent">Rent</option>
+  <option value="sell">Sell</option>
+  <option value="service">Service</option>
+</select>
+
 <input id="title" placeholder="Machine Title" />
-<input id="category" placeholder="Category" />
+
+<select id="category">
+  <option value="">Select Category</option>
+  <option>Excavator</option>
+  <option>Bulldozer</option>
+  <option>Crane</option>
+  <option>Loader</option>
+  <option>Generator</option>
+  <option>Other</option>
+</select>
+
 <input id="price" placeholder="Price" />
 <input id="location" placeholder="Location" />
+<input id="phone" placeholder="Phone Number" />
+
+<textarea id="description" placeholder="Description"></textarea>
 
 <button onclick="addListing()">Submit</button>
 
@@ -55,13 +90,16 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function addListing() {
+    const type = document.getElementById('type').value;
     const title = document.getElementById('title').value;
     const category = document.getElementById('category').value;
     const price = document.getElementById('price').value;
     const location = document.getElementById('location').value;
+    const phone = document.getElementById('phone').value;
+    const description = document.getElementById('description').value;
 
     await client.from('listings').insert([
-      { title, category, price, location }
+      { type, title, category, price, location, phone, description }
     ]);
 
     alert("Saved!");
@@ -76,7 +114,15 @@
 
     data.forEach(item => {
       const div = document.createElement('div');
-      div.innerHTML = `<p>${item.title} - ${item.price} - ${item.location}</p>`;
+      div.className = "card";
+      div.innerHTML = `
+        <h3>${item.title} (${item.type})</h3>
+        <p><b>Category:</b> ${item.category}</p>
+        <p><b>Price:</b> ${item.price}</p>
+        <p><b>Location:</b> ${item.location}</p>
+        <p><b>Phone:</b> ${item.phone}</p>
+        <p>${item.description}</p>
+      `;
       container.appendChild(div);
     });
   }
