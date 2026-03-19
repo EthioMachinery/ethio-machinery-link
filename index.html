@@ -159,6 +159,35 @@ function setOptions(id, arr){
 
 // APPLY
 function applyTranslations(){
+  const isAm = currentLang === "am";
+
+  // Titles
+  document.getElementById("postTitle").innerText =
+    isAm ? "መረጃ አስገባ" : "Post Listing";
+
+  document.getElementById("browseTitle").innerText =
+    isAm ? "መፈለጊያ" : "Browse";
+
+  document.getElementById("submitBtn").innerText =
+    isAm ? "አስገባ" : "Submit";
+
+  // ✅ LANGUAGE BUTTON FIX
+  document.getElementById("langBtn").innerText =
+    isAm ? "🌐 ቋንቋ ቀይር" : "🌐 Switch Language";
+
+  // Placeholders (important ones)
+  document.getElementById("title").placeholder =
+    isAm ? "ርዕስ" : "Title";
+
+  document.getElementById("price").placeholder =
+    isAm ? "ዋጋ" : "Price";
+
+  document.getElementById("location").placeholder =
+    isAm ? "ቦታ" : "Location";
+
+  document.getElementById("phone").placeholder =
+    isAm ? "ስልክ" : "Phone";
+}
   const t=T[currentLang];
 
   document.getElementById("postTitle").innerText=t.post;
