@@ -35,68 +35,36 @@ Ethio Machinery Link (EML)<br>
 <div class="section">
 <h2 id="postTitle">Post Listing</h2>
 
-<select id="type">
-  <option value="">Select Type</option>
-  <option value="rent">Rent</option>
-  <option value="sell">Sell</option>
-  <option value="service">Service</option>
-</select>
-
-<input id="title" placeholder="Title" />
+<select id="type"></select>
+<input id="title" />
 
 <div id="machineFields" style="display:none;">
-  <input id="model_number" placeholder="Model Number" />
-  <input id="year" placeholder="Year" />
+  <input id="model_number" />
+  <input id="year" />
 
-  <select id="condition">
-    <option value="">Condition</option>
-    <option value="new">New</option>
-    <option value="used">Used</option>
-  </select>
+  <select id="condition"></select>
+  <input id="capacity" />
 
-  <input id="capacity" placeholder="Capacity" />
+  <select id="fuel_type"></select>
 
-  <select id="fuel_type">
-    <option value="">Fuel Type</option>
-    <option value="diesel">Diesel</option>
-    <option value="petrol">Petrol</option>
-    <option value="electric">Electric</option>
-  </select>
-
-  <input id="price_type" placeholder="Price Type" />
-  <input id="availability" placeholder="Availability" />
+  <input id="price_type" />
+  <input id="availability" />
 </div>
 
 <div id="serviceFields" style="display:none;">
-  <select id="service_type">
-    <option value="">Service Type</option>
-    <option value="mechanic">Mechanic</option>
-    <option value="operator">Operator</option>
-    <option value="transport">Transport</option>
-    <option value="spare_parts">Spare Parts</option>
-  </select>
-
-  <textarea id="details" placeholder="Service details"></textarea>
+  <select id="service_type"></select>
+  <textarea id="details"></textarea>
 </div>
 
-<select id="category">
-  <option value="">Category</option>
-  <option value="excavator">Excavator</option>
-  <option value="bulldozer">Bulldozer</option>
-  <option value="crane">Crane</option>
-  <option value="loader">Loader</option>
-  <option value="generator">Generator</option>
-  <option value="other">Other</option>
-</select>
+<select id="category"></select>
+<input id="customCategory" style="display:none;" />
 
-<input id="customCategory" placeholder="Specify category" style="display:none;" />
+<input id="price" />
+<input id="location" />
+<input id="phone" />
 
-<input id="price" placeholder="Price" />
-<input id="location" placeholder="Location" />
-<input id="phone" placeholder="Phone" />
-
-<textarea id="specs" placeholder="Specifications"></textarea>
-<textarea id="description" placeholder="Description"></textarea>
+<textarea id="specs"></textarea>
+<textarea id="description"></textarea>
 
 <button id="submitBtn">Submit</button>
 </div>
@@ -104,13 +72,7 @@ Ethio Machinery Link (EML)<br>
 <div class="section">
 <h2 id="browseTitle">Browse</h2>
 
-<select id="filterType">
-  <option value="">All</option>
-  <option value="rent">Rent</option>
-  <option value="sell">Sell</option>
-  <option value="service">Service</option>
-</select>
-
+<select id="filterType"></select>
 <div id="listings"></div>
 </div>
 
@@ -121,85 +83,139 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentLang = "en";
 
-// SAFE TRANSLATION
-function applyTranslations() {
-  const isAm = currentLang === "am";
+// 🌐 TRANSLATIONS (SAFE + COMPLETE)
+const T = {
+  en: {
+    post:"Post Listing", browse:"Browse", submit:"Submit",
+    placeholders:{
+      title:"Title", model:"Model Number", year:"Year", capacity:"Capacity",
+      priceType:"Price Type", availability:"Availability",
+      details:"Service details", custom:"Specify category",
+      price:"Price", location:"Location", phone:"Phone",
+      specs:"Specifications", desc:"Description"
+    },
+    type:[["","Select Type"],["rent","Rent"],["sell","Sell"],["service","Service"]],
+    condition:[["","Condition"],["new","New"],["used","Used"]],
+    fuel:[["","Fuel Type"],["diesel","Diesel"],["petrol","Petrol"],["electric","Electric"]],
+    category:[["","Category"],["excavator","Excavator"],["bulldozer","Bulldozer"],["crane","Crane"],["loader","Loader"],["generator","Generator"],["other","Other"]],
+    service:[["","Service Type"],["mechanic","Mechanic"],["operator","Operator"],["transport","Transport"],["spare_parts","Spare Parts"]],
+    filter:[["","All"],["rent","Rent"],["sell","Sell"],["service","Service"]]
+  },
 
-  document.getElementById("postTitle").innerText =
-    isAm ? "መረጃ አስገባ" : "Post Listing";
+  am: {
+    post:"መረጃ አስገባ", browse:"መፈለጊያ", submit:"አስገባ",
+    placeholders:{
+      title:"ርዕስ", model:"ሞዴል", year:"ዓመት", capacity:"አቅም",
+      priceType:"የዋጋ አይነት", availability:"አለ/የለም",
+      details:"የአገልግሎት መግለጫ", custom:"ምድብ ይግለጹ",
+      price:"ዋጋ", location:"ቦታ", phone:"ስልክ",
+      specs:"ዝርዝር መረጃ", desc:"መግለጫ"
+    },
+    type:[["","አይነት"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]],
+    condition:[["","ሁኔታ"],["new","አዲስ"],["used","ያገለገለ"]],
+    fuel:[["","ነዳጅ"],["diesel","ዲዘል"],["petrol","ፔትሮል"],["electric","ኤሌክትሪክ"]],
+    category:[["","ምድብ"],["excavator","ኤክስካቫተር"],["bulldozer","ቡልዶዘር"],["crane","ክሬን"],["loader","ሎደር"],["generator","ጀነሬተር"],["other","ሌላ"]],
+    service:[["","አገልግሎት"],["mechanic","መካኒክ"],["operator","ኦፕሬተር"],["transport","ትራንስፖርት"],["spare_parts","መለዋወጫ"]],
+    filter:[["","ሁሉም"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]]
+  }
+};
 
-  document.getElementById("browseTitle").innerText =
-    isAm ? "መፈለጊያ" : "Browse";
+// SAFE OPTION SETTER
+function setOptions(id, arr){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const val=el.value;
+  el.innerHTML="";
+  arr.forEach(([v,t])=>{
+    const o=document.createElement("option");
+    o.value=v; o.textContent=t;
+    if(v===val) o.selected=true;
+    el.appendChild(o);
+  });
+}
 
-  document.getElementById("submitBtn").innerText =
-    isAm ? "አስገባ" : "Submit";
+// APPLY
+function applyTranslations(){
+  const t=T[currentLang];
 
-  document.getElementById("price").placeholder =
-    isAm ? "ዋጋ" : "Price";
+  document.getElementById("postTitle").innerText=t.post;
+  document.getElementById("browseTitle").innerText=t.browse;
+  document.getElementById("submitBtn").innerText=t.submit;
 
-  document.getElementById("location").placeholder =
-    isAm ? "ቦታ" : "Location";
+  const p=t.placeholders;
+  document.getElementById("title").placeholder=p.title;
+  document.getElementById("model_number").placeholder=p.model;
+  document.getElementById("year").placeholder=p.year;
+  document.getElementById("capacity").placeholder=p.capacity;
+  document.getElementById("price_type").placeholder=p.priceType;
+  document.getElementById("availability").placeholder=p.availability;
+  document.getElementById("details").placeholder=p.details;
+  document.getElementById("customCategory").placeholder=p.custom;
+  document.getElementById("price").placeholder=p.price;
+  document.getElementById("location").placeholder=p.location;
+  document.getElementById("phone").placeholder=p.phone;
+  document.getElementById("specs").placeholder=p.specs;
+  document.getElementById("description").placeholder=p.desc;
 
-  document.getElementById("phone").placeholder =
-    isAm ? "ስልክ" : "Phone";
+  setOptions("type",t.type);
+  setOptions("condition",t.condition);
+  setOptions("fuel_type",t.fuel);
+  setOptions("category",t.category);
+  setOptions("service_type",t.service);
+  setOptions("filterType",t.filter);
 }
 
 // TOGGLE
-function toggleLanguage() {
-  currentLang = currentLang === "en" ? "am" : "en";
+function toggleLanguage(){
+  currentLang=currentLang==="en"?"am":"en";
   applyTranslations();
 }
 
 // UI
-function updateUI() {
-  const type = document.getElementById("type").value;
-
-  document.getElementById("machineFields").style.display =
-    (type === "rent" || type === "sell") ? "block" : "none";
-
-  document.getElementById("serviceFields").style.display =
-    (type === "service") ? "block" : "none";
+function updateUI(){
+  const type=document.getElementById("type").value;
+  document.getElementById("machineFields").style.display=
+    (type==="rent"||type==="sell")?"block":"none";
+  document.getElementById("serviceFields").style.display=
+    (type==="service")?"block":"none";
 }
 
 // ADD
-async function addListing() {
+async function addListing(){
   await client.from("listings").insert([{
-    type: document.getElementById("type").value,
-    title: document.getElementById("title").value,
-    category: document.getElementById("category").value,
-    price: document.getElementById("price").value,
-    location: document.getElementById("location").value,
-    phone: document.getElementById("phone").value,
-    description: document.getElementById("description").value
+    type:document.getElementById("type").value,
+    title:document.getElementById("title").value,
+    category:document.getElementById("category").value,
+    price:document.getElementById("price").value,
+    location:document.getElementById("location").value,
+    phone:document.getElementById("phone").value,
+    description:document.getElementById("description").value
   }]);
-
   alert("Saved!");
   loadListings();
 }
 
 // LOAD
-async function loadListings() {
-  const { data } = await client.from("listings").select("*");
-
-  const container = document.getElementById("listings");
-  container.innerHTML = "";
-
-  data.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `<h3>${item.title}</h3><p>${item.price}</p>`;
-    container.appendChild(div);
+async function loadListings(){
+  const {data}=await client.from("listings").select("*");
+  const c=document.getElementById("listings");
+  c.innerHTML="";
+  data.forEach(i=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`<h3>${i.title}</h3><p>${i.price}</p><p>${i.location}</p>`;
+    c.appendChild(d);
   });
 }
 
 // INIT
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("type").addEventListener("change", updateUI);
-  document.getElementById("langBtn").addEventListener("click", toggleLanguage);
-  document.getElementById("submitBtn").addEventListener("click", addListing);
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("langBtn").addEventListener("click",toggleLanguage);
+  document.getElementById("type").addEventListener("change",updateUI);
+  document.getElementById("submitBtn").addEventListener("click",addListing);
 
-  updateUI();
   applyTranslations();
+  updateUI();
   loadListings();
 });
 </script>
