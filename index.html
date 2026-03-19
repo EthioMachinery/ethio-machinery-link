@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Ethio Machinery Link (EML)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<title>Ethio Machinery Link (EML)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-  <style>
-    body { font-family: Arial; background:#111; color:white; text-align:center; }
-    header { background:#f4b400; padding:20px; color:black; font-weight:bold; }
-    button { margin:8px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
-    input, select, textarea {
-      margin:8px; padding:10px; width:85%; max-width:350px;
-      border-radius:6px; border:none;
-    }
-    .section { margin-top:30px; }
-    .card {
-      background:#222; margin:10px auto; padding:15px;
-      width:90%; max-width:400px; border-radius:10px; text-align:left;
-    }
-  </style>
+<style>
+body { font-family: Arial; background:#111; color:white; text-align:center; }
+header { background:#f4b400; padding:20px; color:black; font-weight:bold; }
+button { margin:8px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
+input, select, textarea {
+  margin:8px; padding:10px; width:85%; max-width:350px;
+  border-radius:6px; border:none;
+}
+.section { margin-top:30px; }
+.card {
+  background:#222; margin:10px auto; padding:15px;
+  width:90%; max-width:400px; border-radius:10px; text-align:left;
+}
+</style>
 </head>
+
 <body>
 
 <header>
-  Ethio Machinery Link (EML)<br>
-  ኢትዮ ማሽነሪ አገናኝ
+Ethio Machinery Link (EML)<br>
+ኢትዮ ማሽነሪ አገናኝ
 </header>
 
 <button onclick="toggleLanguage()">🌐 Switch Language</button>
@@ -34,7 +35,12 @@
 <div class="section">
 <h2 id="postTitle">Post Listing</h2>
 
-<select id="type"></select>
+<select id="type">
+  <option value="">Select Type</option>
+  <option value="rent">Rent</option>
+  <option value="sell">Sell</option>
+  <option value="service">Service</option>
+</select>
 
 <input id="title" placeholder="Title" />
 
@@ -42,22 +48,46 @@
   <input id="model_number" placeholder="Model Number" />
   <input id="year" placeholder="Year" />
 
-  <select id="condition"></select>
+  <select id="condition">
+    <option value="">Condition</option>
+    <option value="new">New</option>
+    <option value="used">Used</option>
+  </select>
 
   <input id="capacity" placeholder="Capacity" />
 
-  <select id="fuel_type"></select>
+  <select id="fuel_type">
+    <option value="">Fuel Type</option>
+    <option value="diesel">Diesel</option>
+    <option value="petrol">Petrol</option>
+    <option value="electric">Electric</option>
+  </select>
 
   <input id="price_type" placeholder="Price Type" />
   <input id="availability" placeholder="Availability" />
 </div>
 
 <div id="serviceFields" style="display:none;">
-  <select id="service_type"></select>
+  <select id="service_type">
+    <option value="">Service Type</option>
+    <option value="mechanic">Mechanic</option>
+    <option value="operator">Operator</option>
+    <option value="transport">Transport</option>
+    <option value="spare_parts">Spare Parts</option>
+  </select>
+
   <textarea id="details" placeholder="Service details"></textarea>
 </div>
 
-<select id="category"></select>
+<select id="category">
+  <option value="">Category</option>
+  <option value="excavator">Excavator</option>
+  <option value="bulldozer">Bulldozer</option>
+  <option value="crane">Crane</option>
+  <option value="loader">Loader</option>
+  <option value="generator">Generator</option>
+  <option value="other">Other</option>
+</select>
 
 <input id="customCategory" placeholder="Specify category" style="display:none;" />
 
@@ -74,82 +104,42 @@
 <div class="section">
 <h2 id="browseTitle">Browse</h2>
 
-<select id="filterType"></select>
+<select id="filterType">
+  <option value="">All</option>
+  <option value="rent">Rent</option>
+  <option value="sell">Sell</option>
+  <option value="service">Service</option>
+</select>
 
 <div id="listings"></div>
 </div>
 
 <script>
-const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
+const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🌐 LANGUAGE
 let currentLang = "en";
 
-const translations = {
-  en: {
-    post: "Post Listing",
-    browse: "Browse",
-    submit: "Submit",
-    price: "Price",
-    location: "Location",
-    phone: "Phone",
-
-    type: ["Select Type","Rent","Sell","Service"],
-    condition: ["Condition","New","Used"],
-    fuel: ["Fuel Type","Diesel","Petrol","Electric"],
-    category: ["Category","Excavator","Bulldozer","Crane","Loader","Generator","Other"],
-    service: ["Service Type","Mechanic","Operator","Transport","Spare Parts"],
-    filter: ["All","Rent","Sell","Service"]
-  },
-
-  am: {
-    post: "መረጃ አስገባ",
-    browse: "መፈለጊያ",
-    submit: "አስገባ",
-    price: "ዋጋ",
-    location: "ቦታ",
-    phone: "ስልክ",
-
-    type: ["አይነት ይምረጡ","ኪራይ","ሽያጭ","አገልግሎት"],
-    condition: ["ሁኔታ","አዲስ","ያገለገለ"],
-    fuel: ["ነዳጅ አይነት","ዲዘል","ፔትሮል","ኤሌክትሪክ"],
-    category: ["ምድብ","ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር","ጀነሬተር","ሌላ"],
-    service: ["አገልግሎት አይነት","መካኒክ","ኦፕሬተር","ትራንስፖርት","መለዋወጫ"],
-    filter: ["ሁሉም","ኪራይ","ሽያጭ","አገልግሎት"]
-  }
-};
-
-function setOptions(id, arr, values=null) {
-  const el = document.getElementById(id);
-  el.innerHTML = "";
-  arr.forEach((text, i) => {
-    const opt = document.createElement("option");
-    opt.textContent = text;
-    opt.value = values ? values[i] : (i===0 ? "" : text.toLowerCase());
-    el.appendChild(opt);
-  });
-}
-
+// ✅ ONLY TEXT TRANSLATION (SAFE APPROACH)
 function applyTranslations() {
-  const t = translations[currentLang];
+  if (currentLang === "am") {
+    document.getElementById("postTitle").innerText = "መረጃ አስገባ";
+    document.getElementById("browseTitle").innerText = "መፈለጊያ";
+    document.getElementById("submitBtn").innerText = "አስገባ";
 
-  document.getElementById("postTitle").innerText = t.post;
-  document.getElementById("browseTitle").innerText = t.browse;
-  document.getElementById("submitBtn").innerText = t.submit;
+    document.getElementById("price").placeholder = "ዋጋ";
+    document.getElementById("location").placeholder = "ቦታ";
+    document.getElementById("phone").placeholder = "ስልክ";
+  } else {
+    document.getElementById("postTitle").innerText = "Post Listing";
+    document.getElementById("browseTitle").innerText = "Browse";
+    document.getElementById("submitBtn").innerText = "Submit";
 
-  document.getElementById("price").placeholder = t.price;
-  document.getElementById("location").placeholder = t.location;
-  document.getElementById("phone").placeholder = t.phone;
-
-  setOptions("type", t.type, ["","rent","sell","service"]);
-  setOptions("condition", t.condition);
-  setOptions("fuel_type", t.fuel);
-  setOptions("category", t.category);
-  setOptions("service_type", t.service, ["","mechanic","operator","transport","spare_parts"]);
-  setOptions("filterType", t.filter, ["","rent","sell","service"]);
+    document.getElementById("price").placeholder = "Price";
+    document.getElementById("location").placeholder = "Location";
+    document.getElementById("phone").placeholder = "Phone";
+  }
 }
 
 function toggleLanguage() {
@@ -160,8 +150,10 @@ function toggleLanguage() {
 // UI
 function updateUI() {
   const type = document.getElementById('type').value;
+
   document.getElementById('machineFields').style.display =
     (type === 'rent' || type === 'sell') ? 'block' : 'none';
+
   document.getElementById('serviceFields').style.display =
     (type === 'service') ? 'block' : 'none';
 }
@@ -169,7 +161,7 @@ function updateUI() {
 function handleCategory() {
   const cat = document.getElementById('category').value;
   document.getElementById('customCategory').style.display =
-    (cat === 'other') ? 'block' : 'none';
+    (cat === 'other') ? 'block' : 'block';
 }
 
 // ADD
@@ -211,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('type').addEventListener('change', updateUI);
   document.getElementById('category').addEventListener('change', handleCategory);
 
+  updateUI();
   applyTranslations();
   loadListings();
 });
