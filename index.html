@@ -9,7 +9,7 @@
 
 <style>
 body { font-family: Arial; background:#111; color:white; text-align:center; }
-header { background:#f4b400; padding:20px; color:black; font-weight:bold; }
+header { background:#f4b400; padding:20px; color:black; display:flex; flex-direction:column; align-items:center; gap:10px; }
 button { margin:8px; padding:10px; border:none; border-radius:6px; cursor:pointer; }
 input, select, textarea {
   margin:8px; padding:10px; width:85%; max-width:350px;
@@ -25,16 +25,12 @@ input, select, textarea {
 
 <body>
 
-<header style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+<header>
 
-<!-- LOGO (SVG – FREE, PROFESSIONAL) -->
 <svg width="80" height="80" viewBox="0 0 100 100">
-  <!-- Crane -->
   <rect x="10" y="10" width="5" height="60" fill="black"/>
   <line x1="10" y1="10" x2="70" y2="10" stroke="black" stroke-width="3"/>
   <line x1="70" y1="10" x2="70" y2="40" stroke="black" stroke-width="2"/>
-
-  <!-- Excavator -->
   <rect x="40" y="60" width="30" height="10" fill="black"/>
   <circle cx="45" cy="75" r="5" fill="black"/>
   <circle cx="65" cy="75" r="5" fill="black"/>
@@ -42,7 +38,6 @@ input, select, textarea {
   <line x1="70" y1="45" x2="80" y2="50" stroke="black" stroke-width="3"/>
 </svg>
 
-<!-- TEXT -->
 <div style="font-size:22px;font-weight:bold;">
   ኢትዮ ማሽነሪ አገናኝ
 </div>
@@ -64,12 +59,9 @@ input, select, textarea {
 <div id="machineFields" style="display:none;">
   <input id="model_number" />
   <input id="year" />
-
   <select id="condition"></select>
   <input id="capacity" />
-
   <select id="fuel_type"></select>
-
   <input id="price_type" />
   <input id="availability" />
 </div>
@@ -106,17 +98,13 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentLang = "en";
 
-// 🌐 TRANSLATIONS (SAFE + COMPLETE)
+// TRANSLATION DATA
 const T = {
   en: {
-    post:"Post Listing", browse:"Browse", submit:"Submit",
-    placeholders:{
-      title:"Title", model:"Model Number", year:"Year", capacity:"Capacity",
-      priceType:"Price Type", availability:"Availability",
-      details:"Service details", custom:"Specify category",
-      price:"Price", location:"Location", phone:"Phone",
-      specs:"Specifications", desc:"Description"
-    },
+    post:"Post Listing", browse:"Browse", submit:"Submit", lang:"🌐 Switch Language",
+    p:{title:"Title",model:"Model Number",year:"Year",capacity:"Capacity",priceType:"Price Type",
+      availability:"Availability",details:"Service details",custom:"Specify category",
+      price:"Price",location:"Location",phone:"Phone",specs:"Specifications",desc:"Description"},
     type:[["","Select Type"],["rent","Rent"],["sell","Sell"],["service","Service"]],
     condition:[["","Condition"],["new","New"],["used","Used"]],
     fuel:[["","Fuel Type"],["diesel","Diesel"],["petrol","Petrol"],["electric","Electric"]],
@@ -126,14 +114,10 @@ const T = {
   },
 
   am: {
-    post:"መረጃ አስገባ", browse:"መፈለጊያ", submit:"አስገባ",
-    placeholders:{
-      title:"ርዕስ", model:"ሞዴል", year:"ዓመት", capacity:"አቅም",
-      priceType:"የዋጋ አይነት", availability:"አለ/የለም",
-      details:"የአገልግሎት መግለጫ", custom:"ምድብ ይግለጹ",
-      price:"ዋጋ", location:"ቦታ", phone:"ስልክ",
-      specs:"ዝርዝር መረጃ", desc:"መግለጫ"
-    },
+    post:"መረጃ አስገባ", browse:"መፈለጊያ", submit:"አስገባ", lang:"🌐 ቋንቋ ቀይር",
+    p:{title:"ርዕስ",model:"ሞዴል",year:"ዓመት",capacity:"አቅም",priceType:"የዋጋ አይነት",
+      availability:"አለ/የለም",details:"የአገልግሎት መግለጫ",custom:"ምድብ ይግለጹ",
+      price:"ዋጋ",location:"ቦታ",phone:"ስልክ",specs:"ዝርዝር መረጃ",desc:"መግለጫ"},
     type:[["","አይነት"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"]],
     condition:[["","ሁኔታ"],["new","አዲስ"],["used","ያገለገለ"]],
     fuel:[["","ነዳጅ"],["diesel","ዲዘል"],["petrol","ፔትሮል"],["electric","ኤሌክትሪክ"]],
@@ -143,7 +127,7 @@ const T = {
   }
 };
 
-// SAFE OPTION SETTER
+// SET OPTIONS
 function setOptions(id, arr){
   const el=document.getElementById(id);
   if(!el) return;
@@ -157,44 +141,16 @@ function setOptions(id, arr){
   });
 }
 
-// APPLY
+// APPLY TRANSLATION
 function applyTranslations(){
-  const isAm = currentLang === "am";
-
-  // Titles
-  document.getElementById("postTitle").innerText =
-    isAm ? "መረጃ አስገባ" : "Post Listing";
-
-  document.getElementById("browseTitle").innerText =
-    isAm ? "መፈለጊያ" : "Browse";
-
-  document.getElementById("submitBtn").innerText =
-    isAm ? "አስገባ" : "Submit";
-
-  // ✅ LANGUAGE BUTTON FIX
-  document.getElementById("langBtn").innerText =
-    isAm ? "🌐 ቋንቋ ቀይር" : "🌐 Switch Language";
-
-  // Placeholders (important ones)
-  document.getElementById("title").placeholder =
-    isAm ? "ርዕስ" : "Title";
-
-  document.getElementById("price").placeholder =
-    isAm ? "ዋጋ" : "Price";
-
-  document.getElementById("location").placeholder =
-    isAm ? "ቦታ" : "Location";
-
-  document.getElementById("phone").placeholder =
-    isAm ? "ስልክ" : "Phone";
-}
   const t=T[currentLang];
 
   document.getElementById("postTitle").innerText=t.post;
   document.getElementById("browseTitle").innerText=t.browse;
   document.getElementById("submitBtn").innerText=t.submit;
+  document.getElementById("langBtn").innerText=t.lang;
 
-  const p=t.placeholders;
+  const p=t.p;
   document.getElementById("title").placeholder=p.title;
   document.getElementById("model_number").placeholder=p.model;
   document.getElementById("year").placeholder=p.year;
@@ -219,16 +175,16 @@ function applyTranslations(){
 
 // TOGGLE
 function toggleLanguage(){
-  currentLang=currentLang==="en"?"am":"en";
+  currentLang = currentLang==="en"?"am":"en";
   applyTranslations();
 }
 
 // UI
 function updateUI(){
   const type=document.getElementById("type").value;
-  document.getElementById("machineFields").style.display=
+  document.getElementById("machineFields").style.display =
     (type==="rent"||type==="sell")?"block":"none";
-  document.getElementById("serviceFields").style.display=
+  document.getElementById("serviceFields").style.display =
     (type==="service")?"block":"none";
 }
 
@@ -243,6 +199,7 @@ async function addListing(){
     phone:document.getElementById("phone").value,
     description:document.getElementById("description").value
   }]);
+
   alert("Saved!");
   loadListings();
 }
