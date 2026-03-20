@@ -2,215 +2,119 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EML Stable Final</title>
+<title>Ethio Machinery Link</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
 header {background:#f4b400;color:black;text-align:center;padding:20px;}
 .container {padding:15px;}
-button {padding:10px;margin:5px;border:none;border-radius:6px;}
-input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
-.card {background:#222;padding:10px;margin:10px 0;border-radius:8px;}
+
+.search-box {display:flex;gap:10px;}
+input {flex:1;padding:10px;border-radius:6px;border:none;}
+
+.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px;}
+
+.card {background:#222;padding:15px;border-radius:10px;}
+.card h3 {margin:0 0 10px;}
+.tag {font-size:12px;background:#f4b400;color:black;padding:3px 6px;border-radius:4px;}
+
+button {padding:10px;border:none;border-radius:6px;cursor:pointer;}
+.primary {background:#f4b400;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>ኢትዮ ማሽነሪ አገናኝ</h2>
-<p>Ethio Machinery Link</p>
-<button id="langBtn">🌐 Switch Language</button>
+<h2 id="amh">ኢትዮ ማሽነሪ አገናኝ</h2>
+<p id="eng">Ethio Machinery Link</p>
+<button onclick="toggleLang()">🌐</button>
 </header>
 
 <div class="container">
 
+<div class="search-box">
 <input id="searchInput">
-<button id="searchBtn"></button>
-
-<button id="postBtn"></button>
-
-<div id="postSection">
-<select id="type"></select>
-<input id="title">
-<input id="category">
-<input id="location">
-<input id="price">
-<button id="submitBtn"></button>
+<button onclick="search()">🔍</button>
 </div>
 
-<h3 id="listingTitle"></h3>
-<div id="results"></div>
+<div class="grid" id="listings"></div>
 
 </div>
 
 <script>
-
-document.addEventListener("DOMContentLoaded", function(){
-
-/* 🔐 SETTINGS */
-const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
 /* 🌐 LANGUAGE */
 let lang="en";
 
 const T={
 en:{
-search:"Search",
-post:"Post Listing",
-submit:"Submit",
-listing:"Listings",
-nodata:"No listings found",
-title:"Title",
-category:"Category",
-location:"Location",
-price:"Price",
-type:[["rent","Rent"],["sell","Sell"]]
+search:"Search machinery, services, transport...",
+rent:"Rent",
+sell:"Sell",
+service:"Service",
+transport:"Transport"
 },
 am:{
-search:"ፈልግ",
-post:"መረጃ አስገባ",
-submit:"አስገባ",
-listing:"ዝርዝር",
-nodata:"ምንም ውጤት አልተገኘም",
-title:"ርዕስ",
-category:"ምድብ",
-location:"ቦታ",
-price:"ዋጋ",
-type:[["rent","ኪራይ"],["sell","ሽያጭ"]]
+search:"ማሽነሪ፣ አገልግሎት፣ ትራንስፖርት ፈልግ...",
+rent:"ኪራይ",
+sell:"ሽያጭ",
+service:"አገልግሎት",
+transport:"ትራንስፖርት"
 }
 };
 
-/* 🎨 UI */
-function applyLang(){
-const t=T[lang];
+/* 📦 SAMPLE DATA (LIKE REAL PLATFORM) */
+let DATA=[
+{title:"Excavator CAT 320",type:"rent",location:"Addis Ababa",price:"5000 ETB/day"},
+{title:"Bulldozer D6",type:"sell",location:"Adama",price:"2.5M ETB"},
+{title:"Hydraulic Repair Service",type:"service",location:"Addis Ababa",price:"Negotiable"},
+{title:"Lowbed Truck Transport",type:"transport",location:"Nationwide",price:"Depends distance"}
+];
 
-document.getElementById("searchBtn").innerText=t.search;
-document.getElementById("postBtn").innerText=t.post;
-document.getElementById("submitBtn").innerText=t.submit;
-document.getElementById("listingTitle").innerText=t.listing;
+/* 🎨 LOAD */
+function load(data){
+const container=document.getElementById("listings");
+container.innerHTML="";
 
-document.getElementById("title").placeholder=t.title;
-document.getElementById("category").placeholder=t.category;
-document.getElementById("location").placeholder=t.location;
-document.getElementById("price").placeholder=t.price;
-document.getElementById("searchInput").placeholder=t.search;
+data.forEach(item=>{
+const d=document.createElement("div");
+d.className="card";
 
-const type=document.getElementById("type");
-type.innerHTML="";
-t.type.forEach(pair=>{
-const opt=document.createElement("option");
-opt.value=pair[0];
-opt.textContent=pair[1];
-type.appendChild(opt);
+d.innerHTML=`
+<span class="tag">${T[lang][item.type]}</span>
+<h3>${item.title}</h3>
+<p>${item.location}</p>
+<p>${item.price}</p>
+`;
+
+container.appendChild(d);
 });
-}
-
-/* 🔄 LANGUAGE */
-document.getElementById("langBtn").onclick=()=>{
-lang = (lang==="en") ? "am":"en";
-applyLang();
-};
-
-/* 🛡 SAFE FETCH */
-async function safeFetch(url, options){
-try{
-const res = await fetch(url, options);
-return await res.json();
-}catch(e){
-console.log("Fetch failed");
-return [];
-}
-}
-
-/* 📥 LOAD */
-async function loadListings(){
-const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
-headers:{
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-}
-});
-displayListings(data);
 }
 
 /* 🔍 SEARCH */
-document.getElementById("searchBtn").onclick=async ()=>{
-
+function search(){
 const keyword=document.getElementById("searchInput").value.toLowerCase();
 
-const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
-headers:{
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-}
-});
-
-const filtered = data.filter(i=>
-i.title?.toLowerCase().includes(keyword) ||
-i.category?.toLowerCase().includes(keyword)
+const filtered=DATA.filter(i=>
+i.title.toLowerCase().includes(keyword) ||
+i.location.toLowerCase().includes(keyword)
 );
 
-displayListings(filtered);
-};
-
-/* 📤 SAVE */
-document.getElementById("submitBtn").onclick=async ()=>{
-
-const payload={
-type:type.value,
-title:title.value,
-category:category.value,
-location:location.value,
-price:price.value
-};
-
-try{
-await fetch(SUPABASE_URL + "/rest/v1/listings",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-},
-body:JSON.stringify(payload)
-});
-alert("Saved");
-}catch(e){
-alert("Saved locally (offline mode)");
+load(filtered);
 }
 
-loadListings();
-};
-
-/* 🎨 DISPLAY */
-function displayListings(data){
-
-const results=document.getElementById("results");
-results.innerHTML="";
-
-if(!data || data.length===0){
-results.innerHTML=`<p>${T[lang].nodata}</p>`;
-return;
-}
-
-data.forEach(i=>{
-const d=document.createElement("div");
-d.className="card";
-d.innerHTML=`<h4>${i.title}</h4><p>${i.location}</p>`;
-results.appendChild(d);
-});
+/* 🌐 TOGGLE */
+function toggleLang(){
+lang = (lang==="en") ? "am":"en";
+document.getElementById("searchInput").placeholder=T[lang].search;
+load(DATA);
 }
 
 /* INIT */
-applyLang();
-
-/* OPTIONAL LOAD */
-setTimeout(loadListings,1000);
-
-});
+document.getElementById("searchInput").placeholder=T[lang].search;
+load(DATA);
 
 </script>
 
