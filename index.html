@@ -235,11 +235,24 @@ cat.innerHTML+=`<div class="card">${c}</div>`;
 
 }
 
-/* INIT */
+/* 🧪 TEST FUNCTION (FOR NOW) */
+function loadListings(){
+
+console.log("🔥 FUNCTION CALLED");
+
+const container = document.getElementById("listings");
+
+container.innerHTML = `
+<div class="listing-card">
+<h3>TEST MACHINE</h3>
+<p>Addis Ababa</p>
+<p>5000 ETB</p>
+</div>
+`;
+
+}
+
+/* INIT (ONLY ONCE!) */
+alert("Script is running");
 renderUI();
 loadListings();
-
-</script>
-
-</body>
-</html>
