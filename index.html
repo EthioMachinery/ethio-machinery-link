@@ -2,19 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ethio Machinery Link</title>
+<title>EML - Smart Machinery Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-body {font-family:Arial;background:#111;color:#fff;text-align:center;}
-header {background:#f4b400;padding:15px;}
-input,select,textarea,button {
-margin:5px;padding:10px;border-radius:6px;border:none;
+body {font-family:Arial;margin:0;background:#111;color:#fff;}
+header {
+background:#f4b400;
+padding:20px;
+text-align:center;
+color:black;
 }
+.container {padding:15px;}
+button {
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin:5px;
+}
+.primary {background:#f4b400;}
+.dark {background:#333;color:#fff;}
 .card {
-background:#222;margin:10px;padding:10px;border-radius:8px;
+background:#222;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+}
+.grid {
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+gap:10px;
+}
+input, select {
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:6px;
+border:none;
 }
 </style>
 </head>
@@ -23,164 +50,120 @@ background:#222;margin:10px;padding:10px;border-radius:8px;
 
 <header>
 <h2>ኢትዮ ማሽነሪ አገናኝ</h2>
-<p>Ethio Machinery Link</p>
+<p>Ethio Machinery Link (EML)</p>
 </header>
 
-<button id="langBtn">🌐 Switch Language</button>
+<div class="container">
 
-<h3 id="postTitle"></h3>
+<!-- SEARCH -->
+<input id="search" placeholder="Search machinery, transport, services...">
+<button class="primary" onclick="search()">Search</button>
 
-<select id="type"></select>
-<input id="title">
-<input id="category">
-
-<div id="transportFields" style="display:none;">
-<input id="truck_type">
-<input id="capacity_ton">
-<input id="coverage_area">
+<!-- ACTION BUTTONS -->
+<div class="grid">
+<button class="primary" onclick="showSection('post')">Post Listing</button>
+<button class="primary" onclick="showSection('request')">Request Equipment</button>
+<button class="primary" onclick="showSection('transport')">Offer Transport</button>
+<button class="primary" onclick="showSection('service')">Offer Service</button>
 </div>
 
-<input id="location">
-<input id="price">
+<!-- POST -->
+<div id="post" style="display:none;">
+<h3>Post Listing</h3>
+<select id="type">
+<option value="rent">Rent</option>
+<option value="sell">Sell</option>
+</select>
+<input id="title" placeholder="Machine Title">
+<input id="category" placeholder="Category">
+<input id="location" placeholder="Location">
+<input id="price" placeholder="Price">
+<button onclick="addListing()">Submit</button>
+</div>
 
-<button id="submitBtn"></button>
+<!-- REQUEST -->
+<div id="request" style="display:none;">
+<h3>Request Machinery</h3>
+<input id="req_category" placeholder="What do you need?">
+<input id="req_location" placeholder="Location">
+<button onclick="submitRequest()">Submit Request</button>
+</div>
 
-<hr>
+<!-- TRANSPORT -->
+<div id="transport" style="display:none;">
+<h3>Offer Transport</h3>
+<input id="truck" placeholder="Truck Type (Lowbed, Highbed)">
+<input id="capacity" placeholder="Capacity">
+<input id="coverage" placeholder="Coverage Area">
+<button onclick="alert('Saved')">Submit</button>
+</div>
 
-<h3 id="requestTitle"></h3>
+<!-- SERVICE -->
+<div id="service" style="display:none;">
+<h3>Offer Service</h3>
+<input placeholder="Skill (Mechanic, Operator)">
+<input placeholder="Experience">
+<button onclick="alert('Saved')">Submit</button>
+</div>
 
-<input id="req_category">
-<input id="req_location">
-<input id="req_type">
+<!-- RESULTS -->
+<h3>Listings</h3>
+<div id="results"></div>
 
-<button id="reqBtn"></button>
-
-<hr>
-
-<h3 id="matchTitle"></h3>
-<div id="matches"></div>
+</div>
 
 <script>
-
-document.addEventListener("DOMContentLoaded", () => {
 
 const SUPABASE_URL="https://rmdpzvyypnkhadoqoidr.supabase.co
 ";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let lang="en";
-
-const T={
-en:{
-post:"Post Listing",submit:"Submit",request:"Request",
-match:"Matches",lang:"🌐 Switch Language",
-title:"Title",category:"Category",location:"Location",
-price:"Price",truck:"Truck Type",capacity:"Capacity",
-coverage:"Coverage",req:"Submit Request",
-type:[["","Select"],["rent","Rent"],["sell","Sell"],["service","Service"],["transport","Transport"]]
-},
-am:{
-post:"መረጃ አስገባ",submit:"አስገባ",request:"ጥያቄ",
-match:"ተመሳሳይ",lang:"🌐 ቋንቋ ቀይር",
-title:"ርዕስ",category:"ምድብ",location:"ቦታ",
-price:"ዋጋ",truck:"የመኪና አይነት",capacity:"ክብደት",
-coverage:"አካባቢ",req:"ጥያቄ ላክ",
-type:[["","ምረጥ"],["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"],["transport","ትራንስፖርት"]]
-}
-};
-
-function setOptions(){
-const el=document.getElementById("type");
-el.innerHTML="";
-T[lang].type.forEach(([v,t])=>{
-const o=document.createElement("option");
-o.value=v;o.textContent=t;
-el.appendChild(o);
+function showSection(id){
+["post","request","transport","service"].forEach(s=>{
+document.getElementById(s).style.display="none";
 });
+document.getElementById(id).style.display="block";
 }
 
-function applyLang(){
-const t=T[lang];
-
-document.getElementById("postTitle").innerText=t.post;
-document.getElementById("submitBtn").innerText=t.submit;
-document.getElementById("requestTitle").innerText=t.request;
-document.getElementById("matchTitle").innerText=t.match;
-document.getElementById("langBtn").innerText=t.lang;
-document.getElementById("reqBtn").innerText=t.req;
-
-document.getElementById("title").placeholder=t.title;
-document.getElementById("category").placeholder=t.category;
-document.getElementById("location").placeholder=t.location;
-document.getElementById("price").placeholder=t.price;
-
-document.getElementById("truck_type").placeholder=t.truck;
-document.getElementById("capacity_ton").placeholder=t.capacity;
-document.getElementById("coverage_area").placeholder=t.coverage;
-
-document.getElementById("req_category").placeholder=t.category;
-document.getElementById("req_location").placeholder=t.location;
-document.getElementById("req_type").placeholder="Type";
-
-setOptions();
-}
-
-document.getElementById("langBtn").addEventListener("click",()=>{
-lang = (lang === "en") ? "am" : "en";
-applyLang();
-});
-
-document.getElementById("type").addEventListener("change",()=>{
-const type=document.getElementById("type").value;
-document.getElementById("transportFields").style.display =
-(type==="transport")?"block":"none";
-});
-
-document.getElementById("submitBtn").addEventListener("click", async ()=>{
+async function addListing(){
 await client.from("listings").insert([{
-type:document.getElementById("type").value,
-title:document.getElementById("title").value,
-category:document.getElementById("category").value,
-location:document.getElementById("location").value,
-price:document.getElementById("price").value,
-truck_type:document.getElementById("truck_type").value,
-capacity_ton:document.getElementById("capacity_ton").value,
-coverage_area:document.getElementById("coverage_area").value
+type:type.value,
+title:title.value,
+category:category.value,
+location:location.value,
+price:price.value
 }]);
 alert("Saved");
-});
+}
 
-document.getElementById("reqBtn").addEventListener("click", async ()=>{
-
-const req={
-category:document.getElementById("req_category").value.toLowerCase(),
-location:document.getElementById("req_location").value.toLowerCase(),
-type:document.getElementById("req_type").value.toLowerCase()
-};
-
+async function search(){
+const keyword=document.getElementById("search").value.toLowerCase();
 const {data}=await client.from("listings").select("*");
 
-const matches=data.filter(i=>
-i.category?.toLowerCase().includes(req.category) &&
-i.location?.toLowerCase().includes(req.location) &&
-i.type?.toLowerCase().includes(req.type)
-);
+const res=document.getElementById("results");
+res.innerHTML="";
 
-const c=document.getElementById("matches");
-c.innerHTML="";
-
-matches.forEach(m=>{
+data.filter(i=>
+i.title?.toLowerCase().includes(keyword) ||
+i.category?.toLowerCase().includes(keyword)
+).forEach(i=>{
 const d=document.createElement("div");
 d.className="card";
-d.innerHTML=`<h4>${m.title}</h4><p>${m.location}</p><p>${m.price}</p>`;
-c.appendChild(d);
+d.innerHTML=`
+<h4>${i.title}</h4>
+<p>${i.category}</p>
+<p>${i.location}</p>
+<p>${i.price}</p>
+<button>Request This</button>
+`;
+res.appendChild(d);
 });
-});
+}
 
-applyLang();
-
-});
+async function submitRequest(){
+alert("Request submitted (Admin will contact you)");
+}
 
 </script>
 
