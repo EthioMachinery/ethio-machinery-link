@@ -112,7 +112,56 @@ headers:{
 body:JSON.stringify(payload)
 });
 
-loadListings();
+async function loadListings(){
+
+try{
+
+const res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
+headers:{
+"apikey": SUPABASE_KEY,
+"Authorization": "Bearer " + SUPABASE_KEY
+}
+});
+
+const data = await res.json();
+
+console.log("✅ DATA FROM DB:", data);
+
+/* 🔥 FORCE DISPLAY EVEN IF STRUCTURE DIFFERENT */
+if(!data || data.length === 0){
+document.getElementById("listings").innerHTML =
+"<p style='color:white'>No data found</p>";
+return;
+}
+
+const container = document.getElementById("listings");
+container.innerHTML = "";
+
+data.forEach(i=>{
+
+const d = document.createElement("div");
+d.className = "listing-card";
+
+d.innerHTML = `
+<h3>${i.title || "No Title"}</h3>
+<p>${i.type || ""}</p>
+<p>${i.location || ""}</p>
+<p>${i.price || ""}</p>
+`;
+
+container.appendChild(d);
+
+});
+
+}catch(err){
+
+console.log("❌ ERROR:", err);
+
+document.getElementById("listings").innerHTML =
+"<p style='color:red'>Error loading data</p>";
+
+}
+};
 }
 
 /* 🎨 RENDER LISTINGS */
