@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EML Step 2</title>
+<title>EML Stable UI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
@@ -46,17 +44,6 @@ input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none
 
 document.addEventListener("DOMContentLoaded", function(){
 
-/* SAFE SUPABASE INIT */
-let client=null;
-try{
-client = supabase.createClient("https://rmdpzvyypnkhadoqoidr.supabase.co
-L","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA");
-console.log("Supabase connected");
-}catch(e){
-console.log("Supabase failed");
-}
-
-/* LANGUAGE SYSTEM */
 let lang="en";
 
 const T={
@@ -105,39 +92,11 @@ type.appendChild(opt);
 });
 }
 
-/* LANGUAGE TOGGLE */
 document.getElementById("langBtn").onclick=function(){
 lang = (lang==="en")?"am":"en";
 applyLang();
 };
 
-/* SAVE LISTING (TEST BACKEND) */
-document.getElementById("submitBtn").onclick=async function(){
-
-if(!client){
-alert("Backend not connected");
-return;
-}
-
-try{
-await client.from("listings").insert([{
-type:document.getElementById("type").value,
-title:document.getElementById("title").value,
-category:document.getElementById("category").value,
-location:document.getElementById("location").value,
-price:document.getElementById("price").value
-}]);
-
-alert("Saved successfully ✅");
-
-}catch(e){
-alert("Error saving ❌");
-console.log(e);
-}
-
-};
-
-/* INIT */
 applyLang();
 
 });
