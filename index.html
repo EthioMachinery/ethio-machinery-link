@@ -2,112 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EML - Smart Machinery Platform</title>
+<title>EML Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-body {font-family:Arial;margin:0;background:#111;color:#fff;}
-header {
-background:#f4b400;
-padding:20px;
-text-align:center;
-color:black;
-}
+body {margin:0;font-family:Arial;background:#111;color:#fff;}
+header {background:#f4b400;color:black;text-align:center;padding:20px;}
 .container {padding:15px;}
-button {
-padding:10px 15px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin:5px;
-}
+.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
+.card {background:#222;padding:10px;margin:10px 0;border-radius:10px;}
+button {padding:10px;border:none;border-radius:6px;cursor:pointer;}
 .primary {background:#f4b400;}
-.dark {background:#333;color:#fff;}
-.card {
-background:#222;
-padding:15px;
-margin:10px 0;
-border-radius:10px;
-}
-.grid {
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-gap:10px;
-}
-input, select {
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:6px;
-border:none;
-}
+input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>ኢትዮ ማሽነሪ አገናኝ</h2>
-<p>Ethio Machinery Link (EML)</p>
+<h2 id="amh">ኢትዮ ማሽነሪ አገናኝ</h2>
+<p id="eng">Ethio Machinery Link (EML)</p>
+<button id="langBtn">🌐 Switch Language</button>
 </header>
 
 <div class="container">
 
-<!-- SEARCH -->
-<input id="search" placeholder="Search machinery, transport, services...">
-<button class="primary" onclick="search()">Search</button>
+<input id="searchInput">
+<button onclick="search()" id="searchBtn"></button>
 
-<!-- ACTION BUTTONS -->
 <div class="grid">
-<button class="primary" onclick="showSection('post')">Post Listing</button>
-<button class="primary" onclick="showSection('request')">Request Equipment</button>
-<button class="primary" onclick="showSection('transport')">Offer Transport</button>
-<button class="primary" onclick="showSection('service')">Offer Service</button>
+<button class="primary" onclick="showSection('post')" id="postBtn"></button>
+<button class="primary" onclick="showSection('request')" id="reqBtn"></button>
+<button class="primary" onclick="showSection('transport')" id="transBtn"></button>
+<button class="primary" onclick="showSection('service')" id="servBtn"></button>
 </div>
 
 <!-- POST -->
 <div id="post" style="display:none;">
-<h3>Post Listing</h3>
-<select id="type">
-<option value="rent">Rent</option>
-<option value="sell">Sell</option>
-</select>
-<input id="title" placeholder="Machine Title">
-<input id="category" placeholder="Category">
-<input id="location" placeholder="Location">
-<input id="price" placeholder="Price">
-<button onclick="addListing()">Submit</button>
+<h3 id="postTitle"></h3>
+<select id="type"></select>
+<input id="title">
+<input id="category">
+<input id="location">
+<input id="price">
+<button onclick="addListing()" id="submitBtn"></button>
 </div>
 
 <!-- REQUEST -->
 <div id="request" style="display:none;">
-<h3>Request Machinery</h3>
-<input id="req_category" placeholder="What do you need?">
-<input id="req_location" placeholder="Location">
-<button onclick="submitRequest()">Submit Request</button>
+<h3 id="requestTitle"></h3>
+<input id="req_category">
+<input id="req_location">
+<button onclick="submitRequest()" id="submitReqBtn"></button>
 </div>
 
 <!-- TRANSPORT -->
 <div id="transport" style="display:none;">
-<h3>Offer Transport</h3>
-<input id="truck" placeholder="Truck Type (Lowbed, Highbed)">
-<input id="capacity" placeholder="Capacity">
-<input id="coverage" placeholder="Coverage Area">
-<button onclick="alert('Saved')">Submit</button>
+<h3 id="transportTitle"></h3>
+<input id="truck">
+<input id="capacity">
+<input id="coverage">
+<button id="saveTransport"></button>
 </div>
 
 <!-- SERVICE -->
 <div id="service" style="display:none;">
-<h3>Offer Service</h3>
-<input placeholder="Skill (Mechanic, Operator)">
-<input placeholder="Experience">
-<button onclick="alert('Saved')">Submit</button>
+<h3 id="serviceTitle"></h3>
+<input id="skill">
+<input id="experience">
+<button id="saveService"></button>
 </div>
 
-<!-- RESULTS -->
-<h3>Listings</h3>
+<h3 id="listingTitle"></h3>
 <div id="results"></div>
 
 </div>
@@ -118,6 +86,74 @@ const SUPABASE_URL="https://rmdpzvyypnkhadoqoidr.supabase.co
 ";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let lang="en";
+
+const T={
+en:{
+search:"Search",
+post:"Post Listing",
+request:"Request Equipment",
+transport:"Offer Transport",
+service:"Offer Service",
+submit:"Submit",
+listing:"Listings",
+title:"Title",
+category:"Category",
+location:"Location",
+price:"Price",
+req:"Submit Request",
+type:[["rent","Rent"],["sell","Sell"],["service","Service"],["transport","Transport"]]
+},
+am:{
+search:"ፈልግ",
+post:"መረጃ አስገባ",
+request:"ጥያቄ",
+transport:"ትራንስፖርት",
+service:"አገልግሎት",
+submit:"አስገባ",
+listing:"ዝርዝር",
+title:"ርዕስ",
+category:"ምድብ",
+location:"ቦታ",
+price:"ዋጋ",
+req:"ጥያቄ ላክ",
+type:[["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"],["transport","ትራንስፖርት"]]
+}
+};
+
+function applyLang(){
+const t=T[lang];
+
+searchBtn.innerText=t.search;
+postBtn.innerText=t.post;
+reqBtn.innerText=t.request;
+transBtn.innerText=t.transport;
+servBtn.innerText=t.service;
+
+submitBtn.innerText=t.submit;
+submitReqBtn.innerText=t.req;
+
+listingTitle.innerText=t.listing;
+
+title.placeholder=t.title;
+category.placeholder=t.category;
+location.placeholder=t.location;
+price.placeholder=t.price;
+searchInput.placeholder=t.search;
+
+type.innerHTML="";
+t.type.forEach(([v,n])=>{
+const o=document.createElement("option");
+o.value=v;o.textContent=n;
+type.appendChild(o);
+});
+}
+
+langBtn.onclick=()=>{
+lang = (lang==="en") ? "am" : "en";
+applyLang();
+};
 
 function showSection(id){
 ["post","request","transport","service"].forEach(s=>{
@@ -138,16 +174,13 @@ alert("Saved");
 }
 
 async function search(){
-const keyword=document.getElementById("search").value.toLowerCase();
+const keyword=searchInput.value.toLowerCase();
 const {data}=await client.from("listings").select("*");
 
-const res=document.getElementById("results");
-res.innerHTML="";
+results.innerHTML="";
 
-data.filter(i=>
-i.title?.toLowerCase().includes(keyword) ||
-i.category?.toLowerCase().includes(keyword)
-).forEach(i=>{
+data.filter(i=>i.title?.toLowerCase().includes(keyword))
+.forEach(i=>{
 const d=document.createElement("div");
 d.className="card";
 d.innerHTML=`
@@ -155,15 +188,19 @@ d.innerHTML=`
 <p>${i.category}</p>
 <p>${i.location}</p>
 <p>${i.price}</p>
-<button>Request This</button>
+<button onclick="submitRequest()">Request This</button>
 `;
-res.appendChild(d);
+results.appendChild(d);
 });
 }
 
-async function submitRequest(){
-alert("Request submitted (Admin will contact you)");
+function submitRequest(){
+alert(lang==="en"?
+"Request sent. Admin will contact you":
+"ጥያቄ ተልኳል። አስተዳዳሪ ይደውላል");
 }
+
+applyLang();
 
 </script>
 
