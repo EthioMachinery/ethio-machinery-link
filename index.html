@@ -9,13 +9,40 @@
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
 header {background:#f4b400;color:black;text-align:center;padding:20px;}
 .container {padding:20px;}
+
 .search-box {display:flex;gap:10px;margin-top:15px;}
-input {flex:1;padding:12px;border-radius:8px;border:none;}
+.search-box input {flex:1;padding:12px;border-radius:8px;border:none;}
+
 button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4b400;}
-.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px;}
-.card {background:#222;padding:15px;border-radius:10px;text-align:center;}
-.listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
-.tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;}
+
+.grid {
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.card {
+background:#222;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+
+.listing-card {
+background:#222;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.tag {
+background:#f4b400;
+color:black;
+padding:4px 8px;
+border-radius:4px;
+font-size:12px;
+}
 </style>
 </head>
 
@@ -36,20 +63,18 @@ button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4
 <button onclick="search()">🔍</button>
 </div>
 
-<div class="grid" id="services"></div>
+<!-- SERVICES -->
+<div id="services" class="grid"></div>
 
-<div class="grid" id="categories"></div>
+<!-- CATEGORIES -->
+<div id="categories" class="grid"></div>
 
+<!-- LISTINGS (CRITICAL) -->
 <div id="listings"></div>
 
 </div>
 
 <script>
-
-/* 🔐 INSERT YOUR KEYS HERE */
-const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
 /* 🌐 LANGUAGE */
 let lang="en";
@@ -69,150 +94,6 @@ categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"]
 }
 };
 
-/* 🛡 SAFE FETCH */
-async function safeFetch(url, options={}){
-try{
-const res = await fetch(url, options);
-return await res.json();
-}catch(e){
-console.log("API failed");
-return [];
-}
-}
-
-/* 📥 LOAD FROM DATABASE */
-async function loadListings(){
-
-const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
-headers:{
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-}
-});
-
-renderListings(data);
-}
-
-/* 📤 SAVE */
-async function saveListing(){
-
-const payload={
-title:"New Listing",
-location:"Addis Ababa",
-price:"0"
-};
-
-await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-},
-body:JSON.stringify(payload)
-});
-
-async function loadListings(){
-
-try{
-
-const res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
-headers:{
-"apikey": SUPABASE_KEY,
-"Authorization": "Bearer " + SUPABASE_KEY
-}
-});
-
-const data = await res.json();
-
-console.log("✅ DATA FROM DB:", data);
-
-/* 🔥 FORCE DISPLAY EVEN IF STRUCTURE DIFFERENT */
-if(!data || data.length === 0){
-document.getElementById("listings").innerHTML =
-"<p style='color:white'>No data found</p>";
-return;
-}
-
-const container = document.getElementById("listings");
-container.innerHTML = "";
-
-data.forEach(i=>{
-
-const d = document.createElement("div");
-d.className = "listing-card";
-
-d.innerHTML = `
-<h3>${i.title || "No Title"}</h3>
-<p>${i.type || ""}</p>
-<p>${i.location || ""}</p>
-<p>${i.price || ""}</p>
-`;
-
-container.appendChild(d);
-
-});
-
-}catch(err){
-
-console.log("❌ ERROR:", err);
-
-document.getElementById("listings").innerHTML =
-"<p style='color:red'>Error loading data</p>";
-
-}
-};
-}
-
-/* 🎨 RENDER LISTINGS */
-function renderListings(data){
-
-const container=document.getElementById("listings");
-container.innerHTML="";
-
-if(!data.length){
-container.innerHTML="<p>No data yet</p>";
-return;
-}
-
-data.forEach(i=>{
-const d=document.createElement("div");
-d.className="listing-card";
-d.innerHTML=`
-<span class="tag">Listing</span>
-<h3>${i.title || "No title"}</h3>
-<p>${i.location || ""}</p>
-<p>${i.price || ""}</p>
-`;
-container.appendChild(d);
-});
-}
-
-/* 🔍 SEARCH */
-async function search(){
-
-const keyword=document.getElementById("searchInput").value.toLowerCase();
-
-const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
-headers:{
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-}
-});
-
-const filtered=data.filter(i=>
-(i.title||"").toLowerCase().includes(keyword)
-);
-
-renderListings(filtered);
-}
-
-/* 🌐 LANGUAGE */
-function toggleLang(){
-lang = (lang==="en")?"am":"en";
-renderUI();
-}
-
 /* 🎨 UI */
 function renderUI(){
 
@@ -221,12 +102,14 @@ const t=T[lang];
 document.getElementById("hero").innerText=t.hero;
 document.getElementById("searchInput").placeholder=t.search;
 
+/* SERVICES */
 const services=document.getElementById("services");
 services.innerHTML="";
 t.services.forEach(s=>{
 services.innerHTML+=`<div class="card">${s}</div>`;
 });
 
+/* CATEGORIES */
 const cat=document.getElementById("categories");
 cat.innerHTML="";
 t.categories.forEach(c=>{
@@ -235,24 +118,70 @@ cat.innerHTML+=`<div class="card">${c}</div>`;
 
 }
 
-/* 🧪 TEST FUNCTION (FOR NOW) */
+/* 🧪 TEST LISTINGS (GUARANTEED DISPLAY) */
 function loadListings(){
 
-console.log("🔥 FUNCTION CALLED");
+const container=document.getElementById("listings");
 
-const container = document.getElementById("listings");
+container.innerHTML="";
 
-container.innerHTML = `
+/* DEMO DATA */
+const demoData=[
+{title:"Excavator CAT 320",location:"Addis Ababa",price:"5000 ETB/day"},
+{title:"Bulldozer D6",location:"Adama",price:"2.5M ETB"},
+{title:"Lowbed Transport",location:"Nationwide",price:"Negotiable"}
+];
+
+demoData.forEach(i=>{
+container.innerHTML+=`
 <div class="listing-card">
-<h3>TEST MACHINE</h3>
-<p>Addis Ababa</p>
-<p>5000 ETB</p>
+<span class="tag">Listing</span>
+<h3>${i.title}</h3>
+<p>${i.location}</p>
+<p>${i.price}</p>
 </div>
 `;
+});
 
 }
 
-/* INIT (ONLY ONCE!) */
-alert("Script is running");
+/* 🔍 SEARCH */
+function search(){
+
+const keyword=document.getElementById("searchInput").value.toLowerCase();
+
+const results=[
+{title:"Excavator CAT 320",location:"Addis Ababa",price:"5000 ETB/day"},
+{title:"Bulldozer D6",location:"Adama",price:"2.5M ETB"}
+].filter(i=>i.title.toLowerCase().includes(keyword));
+
+const container=document.getElementById("listings");
+container.innerHTML="";
+
+results.forEach(i=>{
+container.innerHTML+=`
+<div class="listing-card">
+<h3>${i.title}</h3>
+<p>${i.location}</p>
+<p>${i.price}</p>
+</div>
+`;
+});
+
+}
+
+/* 🌐 LANGUAGE */
+function toggleLang(){
+lang = (lang==="en")?"am":"en";
 renderUI();
 loadListings();
+}
+
+/* INIT */
+renderUI();
+loadListings();
+
+</script>
+
+</body>
+</html>
