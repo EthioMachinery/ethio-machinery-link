@@ -1,14 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Test</title>
+<meta charset="UTF-8">
+<title>EML Working Base</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {margin:0;font-family:Arial;background:#111;color:#fff;}
+header {background:#f4b400;color:black;text-align:center;padding:20px;}
+.container {padding:15px;}
+button {padding:10px;margin:5px;border:none;border-radius:6px;}
+input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
+</style>
 </head>
+
 <body>
 
-<h1 id="test">Not Working</h1>
+<header>
+<h2>ኢትዮ ማሽነሪ አገናኝ</h2>
+<p>Ethio Machinery Link</p>
+<button id="langBtn">🌐 Switch Language</button>
+</header>
+
+<div class="container">
+
+<input id="searchInput">
+<button id="searchBtn"></button>
+
+<button id="postBtn"></button>
+
+<div id="postSection">
+<select id="type"></select>
+<input id="title">
+<input id="category">
+<input id="location">
+<input id="price">
+<button id="submitBtn"></button>
+</div>
+
+</div>
 
 <script>
-document.getElementById("test").innerText = "JavaScript Working ✅";
+
+document.addEventListener("DOMContentLoaded", function(){
+
+let lang="en";
+
+const T={
+en:{
+search:"Search",
+post:"Post Listing",
+submit:"Submit",
+title:"Title",
+category:"Category",
+location:"Location",
+price:"Price",
+type:[["rent","Rent"],["sell","Sell"]]
+},
+am:{
+search:"ፈልግ",
+post:"መረጃ አስገባ",
+submit:"አስገባ",
+title:"ርዕስ",
+category:"ምድብ",
+location:"ቦታ",
+price:"ዋጋ",
+type:[["rent","ኪራይ"],["sell","ሽያጭ"]]
+}
+};
+
+function applyLang(){
+const t=T[lang];
+
+document.getElementById("searchBtn").innerText=t.search;
+document.getElementById("postBtn").innerText=t.post;
+document.getElementById("submitBtn").innerText=t.submit;
+
+document.getElementById("title").placeholder=t.title;
+document.getElementById("category").placeholder=t.category;
+document.getElementById("location").placeholder=t.location;
+document.getElementById("price").placeholder=t.price;
+document.getElementById("searchInput").placeholder=t.search;
+
+const type=document.getElementById("type");
+type.innerHTML="";
+t.type.forEach(function(pair){
+const opt=document.createElement("option");
+opt.value=pair[0];
+opt.textContent=pair[1];
+type.appendChild(opt);
+});
+}
+
+document.getElementById("langBtn").onclick=function(){
+lang = (lang==="en")?"am":"en";
+applyLang();
+};
+
+applyLang();
+
+});
+
 </script>
 
 </body>
