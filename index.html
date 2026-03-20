@@ -8,113 +8,187 @@
 <style>
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
 header {background:#f4b400;color:black;text-align:center;padding:20px;}
-.container {padding:15px;}
-
-.search-box {display:flex;gap:10px;}
-input {flex:1;padding:10px;border-radius:6px;border:none;}
-
-.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px;}
-
-.card {background:#222;padding:15px;border-radius:10px;}
-.card h3 {margin:0 0 10px;}
-.tag {font-size:12px;background:#f4b400;color:black;padding:3px 6px;border-radius:4px;}
-
-button {padding:10px;border:none;border-radius:6px;cursor:pointer;}
-.primary {background:#f4b400;}
+.container {padding:20px;}
+.search-box {display:flex;gap:10px;margin-top:15px;}
+input {flex:1;padding:12px;border-radius:8px;border:none;}
+button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4b400;}
+.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px;}
+.card {background:#222;padding:15px;border-radius:10px;text-align:center;}
+.listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
+.tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2 id="amh">ኢትዮ ማሽነሪ አገናኝ</h2>
-<p id="eng">Ethio Machinery Link</p>
+<h2>ኢትዮ ማሽነሪ አገናኝ</h2>
+<p>Ethio Machinery Link (EML)</p>
 <button onclick="toggleLang()">🌐</button>
 </header>
 
 <div class="container">
+
+<h2 id="hero"></h2>
 
 <div class="search-box">
 <input id="searchInput">
 <button onclick="search()">🔍</button>
 </div>
 
-<div class="grid" id="listings"></div>
+<div class="grid" id="services"></div>
+
+<div class="grid" id="categories"></div>
+
+<div id="listings"></div>
 
 </div>
 
 <script>
+
+/* 🔐 INSERT YOUR KEYS HERE */
+const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
+";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
 /* 🌐 LANGUAGE */
 let lang="en";
 
 const T={
 en:{
-search:"Search machinery, services, transport...",
-rent:"Rent",
-sell:"Sell",
-service:"Service",
-transport:"Transport"
+hero:"Find, Rent, Buy Machinery",
+search:"Search...",
+services:["Rent","Buy","Sell","Service","Transport"],
+categories:["Excavator","Bulldozer","Crane","Loader"]
 },
 am:{
-search:"ማሽነሪ፣ አገልግሎት፣ ትራንስፖርት ፈልግ...",
-rent:"ኪራይ",
-sell:"ሽያጭ",
-service:"አገልግሎት",
-transport:"ትራንስፖርት"
+hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",
+search:"ፈልግ...",
+services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
+categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"]
 }
 };
 
-/* 📦 SAMPLE DATA (LIKE REAL PLATFORM) */
-let DATA=[
-{title:"Excavator CAT 320",type:"rent",location:"Addis Ababa",price:"5000 ETB/day"},
-{title:"Bulldozer D6",type:"sell",location:"Adama",price:"2.5M ETB"},
-{title:"Hydraulic Repair Service",type:"service",location:"Addis Ababa",price:"Negotiable"},
-{title:"Lowbed Truck Transport",type:"transport",location:"Nationwide",price:"Depends distance"}
-];
+/* 🛡 SAFE FETCH */
+async function safeFetch(url, options={}){
+try{
+const res = await fetch(url, options);
+return await res.json();
+}catch(e){
+console.log("API failed");
+return [];
+}
+}
 
-/* 🎨 LOAD */
-function load(data){
+/* 📥 LOAD FROM DATABASE */
+async function loadListings(){
+
+const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
+headers:{
+"apikey":SUPABASE_KEY,
+"Authorization":"Bearer " + SUPABASE_KEY
+}
+});
+
+renderListings(data);
+}
+
+/* 📤 SAVE */
+async function saveListing(){
+
+const payload={
+title:"New Listing",
+location:"Addis Ababa",
+price:"0"
+};
+
+await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"apikey":SUPABASE_KEY,
+"Authorization":"Bearer " + SUPABASE_KEY
+},
+body:JSON.stringify(payload)
+});
+
+loadListings();
+}
+
+/* 🎨 RENDER LISTINGS */
+function renderListings(data){
+
 const container=document.getElementById("listings");
 container.innerHTML="";
 
-data.forEach(item=>{
+if(!data.length){
+container.innerHTML="<p>No data yet</p>";
+return;
+}
+
+data.forEach(i=>{
 const d=document.createElement("div");
-d.className="card";
-
+d.className="listing-card";
 d.innerHTML=`
-<span class="tag">${T[lang][item.type]}</span>
-<h3>${item.title}</h3>
-<p>${item.location}</p>
-<p>${item.price}</p>
+<span class="tag">Listing</span>
+<h3>${i.title || "No title"}</h3>
+<p>${i.location || ""}</p>
+<p>${i.price || ""}</p>
 `;
-
 container.appendChild(d);
 });
 }
 
 /* 🔍 SEARCH */
-function search(){
+async function search(){
+
 const keyword=document.getElementById("searchInput").value.toLowerCase();
 
-const filtered=DATA.filter(i=>
-i.title.toLowerCase().includes(keyword) ||
-i.location.toLowerCase().includes(keyword)
+const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
+headers:{
+"apikey":SUPABASE_KEY,
+"Authorization":"Bearer " + SUPABASE_KEY
+}
+});
+
+const filtered=data.filter(i=>
+(i.title||"").toLowerCase().includes(keyword)
 );
 
-load(filtered);
+renderListings(filtered);
 }
 
-/* 🌐 TOGGLE */
+/* 🌐 LANGUAGE */
 function toggleLang(){
-lang = (lang==="en") ? "am":"en";
-document.getElementById("searchInput").placeholder=T[lang].search;
-load(DATA);
+lang = (lang==="en")?"am":"en";
+renderUI();
+}
+
+/* 🎨 UI */
+function renderUI(){
+
+const t=T[lang];
+
+document.getElementById("hero").innerText=t.hero;
+document.getElementById("searchInput").placeholder=t.search;
+
+const services=document.getElementById("services");
+services.innerHTML="";
+t.services.forEach(s=>{
+services.innerHTML+=`<div class="card">${s}</div>`;
+});
+
+const cat=document.getElementById("categories");
+cat.innerHTML="";
+t.categories.forEach(c=>{
+cat.innerHTML+=`<div class="card">${c}</div>`;
+});
+
 }
 
 /* INIT */
-document.getElementById("searchInput").placeholder=T[lang].search;
-load(DATA);
+renderUI();
+setTimeout(loadListings,1000);
 
 </script>
 
