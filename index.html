@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EML Platform</title>
+<title>Ethio Machinery Link (EML)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -11,68 +11,52 @@
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
 header {background:#f4b400;color:black;text-align:center;padding:20px;}
 .container {padding:15px;}
-.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
-.card {background:#222;padding:10px;margin:10px 0;border-radius:10px;}
+.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
 button {padding:10px;border:none;border-radius:6px;cursor:pointer;}
 .primary {background:#f4b400;}
+.card {background:#222;padding:10px;margin:10px 0;border-radius:10px;}
 input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
+.section {display:none;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2 id="amh">ኢትዮ ማሽነሪ አገናኝ</h2>
-<p id="eng">Ethio Machinery Link (EML)</p>
+<h2>ኢትዮ ማሽነሪ አገናኝ</h2>
+<p>Ethio Machinery Link (EML)</p>
 <button id="langBtn">🌐 Switch Language</button>
 </header>
 
 <div class="container">
 
+<!-- SEARCH -->
 <input id="searchInput">
-<button onclick="search()" id="searchBtn"></button>
+<button id="searchBtn"></button>
 
+<!-- ACTIONS -->
 <div class="grid">
-<button class="primary" onclick="showSection('post')" id="postBtn"></button>
-<button class="primary" onclick="showSection('request')" id="reqBtn"></button>
-<button class="primary" onclick="showSection('transport')" id="transBtn"></button>
-<button class="primary" onclick="showSection('service')" id="servBtn"></button>
+<button class="primary" id="postBtn"></button>
+<button class="primary" id="requestBtn"></button>
 </div>
 
-<!-- POST -->
-<div id="post" style="display:none;">
+<!-- POST SECTION -->
+<div id="postSection" class="section">
 <h3 id="postTitle"></h3>
 <select id="type"></select>
 <input id="title">
 <input id="category">
 <input id="location">
 <input id="price">
-<button onclick="addListing()" id="submitBtn"></button>
+<button id="submitBtn"></button>
 </div>
 
-<!-- REQUEST -->
-<div id="request" style="display:none;">
+<!-- REQUEST SECTION -->
+<div id="requestSection" class="section">
 <h3 id="requestTitle"></h3>
 <input id="req_category">
 <input id="req_location">
-<button onclick="submitRequest()" id="submitReqBtn"></button>
-</div>
-
-<!-- TRANSPORT -->
-<div id="transport" style="display:none;">
-<h3 id="transportTitle"></h3>
-<input id="truck">
-<input id="capacity">
-<input id="coverage">
-<button id="saveTransport"></button>
-</div>
-
-<!-- SERVICE -->
-<div id="service" style="display:none;">
-<h3 id="serviceTitle"></h3>
-<input id="skill">
-<input id="experience">
-<button id="saveService"></button>
+<button id="submitReqBtn"></button>
 </div>
 
 <h3 id="listingTitle"></h3>
@@ -82,11 +66,18 @@ input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none
 
 <script>
 
-const SUPABASE_URL="https://rmdpzvyypnkhadoqoidr.supabase.co
-";
-const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+document.addEventListener("DOMContentLoaded", ()=>{
 
+/* SAFE SUPABASE INIT */
+let client = null;
+try{
+client = supabase.createClient("https://rmdpzvyypnkhadoqoidr.supabase.co
+","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA");
+}catch(e){
+console.log("Supabase not connected");
+}
+
+/* LANGUAGE SYSTEM */
 let lang="en";
 
 const T={
@@ -94,31 +85,29 @@ en:{
 search:"Search",
 post:"Post Listing",
 request:"Request Equipment",
-transport:"Offer Transport",
-service:"Offer Service",
 submit:"Submit",
+submitReq:"Submit Request",
 listing:"Listings",
 title:"Title",
 category:"Category",
 location:"Location",
 price:"Price",
-req:"Submit Request",
-type:[["rent","Rent"],["sell","Sell"],["service","Service"],["transport","Transport"]]
+reqcat:"What do you need?",
+type:[["rent","Rent"],["sell","Sell"]]
 },
 am:{
 search:"ፈልግ",
 post:"መረጃ አስገባ",
 request:"ጥያቄ",
-transport:"ትራንስፖርት",
-service:"አገልግሎት",
 submit:"አስገባ",
+submitReq:"ጥያቄ ላክ",
 listing:"ዝርዝር",
 title:"ርዕስ",
 category:"ምድብ",
 location:"ቦታ",
 price:"ዋጋ",
-req:"ጥያቄ ላክ",
-type:[["rent","ኪራይ"],["sell","ሽያጭ"],["service","አገልግሎት"],["transport","ትራንስፖርት"]]
+reqcat:"ምን ይፈልጋሉ?",
+type:[["rent","ኪራይ"],["sell","ሽያጭ"]]
 }
 };
 
@@ -127,13 +116,9 @@ const t=T[lang];
 
 searchBtn.innerText=t.search;
 postBtn.innerText=t.post;
-reqBtn.innerText=t.request;
-transBtn.innerText=t.transport;
-servBtn.innerText=t.service;
-
+requestBtn.innerText=t.request;
 submitBtn.innerText=t.submit;
-submitReqBtn.innerText=t.req;
-
+submitReqBtn.innerText=t.submitReq;
 listingTitle.innerText=t.listing;
 
 title.placeholder=t.title;
@@ -142,27 +127,41 @@ location.placeholder=t.location;
 price.placeholder=t.price;
 searchInput.placeholder=t.search;
 
+req_category.placeholder=t.reqcat;
+req_location.placeholder=t.location;
+
+const type=document.getElementById("type");
 type.innerHTML="";
 t.type.forEach(([v,n])=>{
 const o=document.createElement("option");
-o.value=v;o.textContent=n;
+o.value=v;
+o.textContent=n;
 type.appendChild(o);
 });
 }
 
+/* LANGUAGE TOGGLE */
 langBtn.onclick=()=>{
-lang = (lang==="en") ? "am" : "en";
+lang = (lang==="en") ? "am":"en";
 applyLang();
 };
 
-function showSection(id){
-["post","request","transport","service"].forEach(s=>{
-document.getElementById(s).style.display="none";
-});
-document.getElementById(id).style.display="block";
-}
+/* SECTION CONTROL */
+postBtn.onclick=()=>{
+postSection.style.display="block";
+requestSection.style.display="none";
+};
 
-async function addListing(){
+requestBtn.onclick=()=>{
+postSection.style.display="none";
+requestSection.style.display="block";
+};
+
+/* ADD LISTING */
+submitBtn.onclick=async ()=>{
+if(!client){alert("Backend not connected");return;}
+
+try{
 await client.from("listings").insert([{
 type:type.value,
 title:title.value,
@@ -171,16 +170,24 @@ location:location.value,
 price:price.value
 }]);
 alert("Saved");
+}catch(e){
+alert("Error saving");
 }
+};
 
-async function search(){
+/* SEARCH */
+searchBtn.onclick=async ()=>{
+if(!client){alert("Backend not connected");return;}
+
 const keyword=searchInput.value.toLowerCase();
 const {data}=await client.from("listings").select("*");
 
 results.innerHTML="";
 
-data.filter(i=>i.title?.toLowerCase().includes(keyword))
-.forEach(i=>{
+data.filter(i=>
+i.title?.toLowerCase().includes(keyword) ||
+i.category?.toLowerCase().includes(keyword)
+).forEach(i=>{
 const d=document.createElement("div");
 d.className="card";
 d.innerHTML=`
@@ -188,19 +195,23 @@ d.innerHTML=`
 <p>${i.category}</p>
 <p>${i.location}</p>
 <p>${i.price}</p>
-<button onclick="submitRequest()">Request This</button>
+<button onclick="submitRequest()">${lang==="en"?"Request":"ጠይቅ"}</button>
 `;
 results.appendChild(d);
 });
-}
+};
 
+/* REQUEST */
 function submitRequest(){
 alert(lang==="en"?
 "Request sent. Admin will contact you":
 "ጥያቄ ተልኳል። አስተዳዳሪ ይደውላል");
 }
 
+/* INIT */
 applyLang();
+
+});
 
 </script>
 
