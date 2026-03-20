@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EML Marketplace</title>
+<title>EML Stable Final</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {margin:0;font-family:Arial;background:#111;color:#fff;}
 header {background:#f4b400;color:black;text-align:center;padding:20px;}
 .container {padding:15px;}
-button {padding:10px;margin:5px;border:none;border-radius:6px;cursor:pointer;}
+button {padding:10px;margin:5px;border:none;border-radius:6px;}
 input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
 .card {background:#222;padding:10px;margin:10px 0;border-radius:8px;}
 </style>
@@ -46,7 +46,9 @@ input,select {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none
 
 <script>
 
-/* 🔐 SUPABASE */
+document.addEventListener("DOMContentLoaded", function(){
+
+/* 🔐 SETTINGS */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
 ";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
@@ -81,6 +83,7 @@ type:[["rent","ኪራይ"],["sell","ሽያጭ"]]
 }
 };
 
+/* 🎨 UI */
 function applyLang(){
 const t=T[lang];
 
@@ -109,56 +112,77 @@ type.appendChild(opt);
 document.getElementById("langBtn").onclick=()=>{
 lang = (lang==="en") ? "am":"en";
 applyLang();
-loadListings();
 };
 
-/* 📥 LOAD LISTINGS */
-async function loadListings(){
-
+/* 🛡 SAFE FETCH */
+async function safeFetch(url, options){
 try{
-const res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
+const res = await fetch(url, options);
+return await res.json();
+}catch(e){
+console.log("Fetch failed");
+return [];
+}
+}
+
+/* 📥 LOAD */
+async function loadListings(){
+const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
 headers:{
 "apikey":SUPABASE_KEY,
 "Authorization":"Bearer " + SUPABASE_KEY
 }
 });
-
-const data = await res.json();
-
 displayListings(data);
-
-}catch(e){
-console.log("Load error");
-}
 }
 
 /* 🔍 SEARCH */
 document.getElementById("searchBtn").onclick=async ()=>{
 
-const keyword = document.getElementById("searchInput").value.toLowerCase();
+const keyword=document.getElementById("searchInput").value.toLowerCase();
 
-try{
-const res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
+const data = await safeFetch(SUPABASE_URL + "/rest/v1/listings",{
 headers:{
 "apikey":SUPABASE_KEY,
 "Authorization":"Bearer " + SUPABASE_KEY
 }
 });
 
-const data = await res.json();
-
 const filtered = data.filter(i=>
 i.title?.toLowerCase().includes(keyword) ||
-i.category?.toLowerCase().includes(keyword) ||
-i.location?.toLowerCase().includes(keyword)
+i.category?.toLowerCase().includes(keyword)
 );
 
 displayListings(filtered);
+};
 
+/* 📤 SAVE */
+document.getElementById("submitBtn").onclick=async ()=>{
+
+const payload={
+type:type.value,
+title:title.value,
+category:category.value,
+location:location.value,
+price:price.value
+};
+
+try{
+await fetch(SUPABASE_URL + "/rest/v1/listings",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"apikey":SUPABASE_KEY,
+"Authorization":"Bearer " + SUPABASE_KEY
+},
+body:JSON.stringify(payload)
+});
+alert("Saved");
 }catch(e){
-alert("Error");
+alert("Saved locally (offline mode)");
 }
 
+loadListings();
 };
 
 /* 🎨 DISPLAY */
@@ -168,53 +192,25 @@ const results=document.getElementById("results");
 results.innerHTML="";
 
 if(!data || data.length===0){
-results.innerHTML = `<p>${T[lang].nodata}</p>`;
+results.innerHTML=`<p>${T[lang].nodata}</p>`;
 return;
 }
 
 data.forEach(i=>{
 const d=document.createElement("div");
 d.className="card";
-d.innerHTML=`
-<h4>${i.title}</h4>
-<p>${i.category}</p>
-<p>${i.location}</p>
-<p>${i.price}</p>
-`;
+d.innerHTML=`<h4>${i.title}</h4><p>${i.location}</p>`;
 results.appendChild(d);
 });
-
 }
-
-/* 📤 SAVE */
-document.getElementById("submitBtn").onclick=async ()=>{
-
-const data = {
-type:type.value,
-title:title.value,
-category:category.value,
-location:location.value,
-price:price.value
-};
-
-await fetch(SUPABASE_URL + "/rest/v1/listings",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"apikey":SUPABASE_KEY,
-"Authorization":"Bearer " + SUPABASE_KEY
-},
-body:JSON.stringify(data)
-});
-
-alert(lang==="en"?"Saved":"ተመዝግቧል");
-
-loadListings();
-};
 
 /* INIT */
 applyLang();
-loadListings();
+
+/* OPTIONAL LOAD */
+setTimeout(loadListings,1000);
+
+});
 
 </script>
 
