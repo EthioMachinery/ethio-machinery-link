@@ -25,7 +25,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 <header>
 <h2>ኢትዮ ማሽነሪ አገናኝ</h2>
 <p>Ethio Machinery Link (EML)</p>
-<button onclick="toggleLang()">🌐</button>
+<button onclick="toggleLang()">Switch Language</button>
 </header>
 
 <div class="container">
@@ -34,7 +34,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <div class="search-box">
 <input id="searchInput">
-<button onclick="search()">🔍</button>
+<button onclick="search()">Search</button>
 </div>
 
 <div id="services" class="grid"></div>
@@ -60,17 +60,17 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <script>
 
-console.log("✅ JS LOADED");
+console.log("EML script started");
 
-/* 🔑 SUPABASE (REPLACE THESE) */
+/* SUPABASE KEYS */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
 ";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
-/* 🌐 LANGUAGE */
-let lang="en";
+/* LANGUAGE */
+let lang = "en";
 
-const T={
+const T = {
 en:{
 hero:"Find, Rent, Buy Machinery",
 search:"Search...",
@@ -85,201 +85,148 @@ categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"]
 }
 };
 
-/* 🎨 UI */
 function renderUI(){
-try{
-const t=T[lang];
-document.getElementById("hero").innerText=t.hero;
-document.getElementById("searchInput").placeholder=t.search;
 
-const services=document.getElementById("services");
-services.innerHTML="";
-t.services.forEach(s=>{
-services.innerHTML+=`<div class="card">${s}</div>`;
+const t = T[lang];
+
+document.getElementById("hero").innerText = t.hero;
+document.getElementById("searchInput").placeholder = t.search;
+
+const services = document.getElementById("services");
+services.innerHTML = "";
+
+t.services.forEach(function(s){
+services.innerHTML += "<div class='card'>" + s + "</div>";
 });
 
-const cat=document.getElementById("categories");
-cat.innerHTML="";
-t.categories.forEach(c=>{
-cat.innerHTML+=`<div class="card">${c}</div>`;
+const cat = document.getElementById("categories");
+cat.innerHTML = "";
+
+t.categories.forEach(function(c){
+cat.innerHTML += "<div class='card'>" + c + "</div>";
 });
-}catch(e){
-console.error("UI ERROR:",e);
-}
+
 }
 
-/* 🧠 FORM */
+function toggleLang(){
+if(lang === "en"){ lang = "am"; }
+else{ lang = "en"; }
+renderUI();
+}
+
 function updateForm(){
-try{
-const type=document.getElementById("postType").value;
-const form=document.getElementById("dynamicForm");
-form.innerHTML="";
 
-if(type==="rent"||type==="sell"){
-form.innerHTML=`
-<input id="title" placeholder="Machine Name">
-<input id="category" placeholder="Category">
-<input id="model" placeholder="Model">
-<input id="year" placeholder="Year">
-<input id="capacity" placeholder="Capacity">
-<input id="origin" placeholder="Country of Origin">
-<input id="condition" placeholder="New / Used">
-<input id="price" placeholder="Price">
-<input id="location" placeholder="Location">
-`;
+const type = document.getElementById("postType").value;
+const form = document.getElementById("dynamicForm");
+form.innerHTML = "";
+
+if(type === "rent" || type === "sell"){
+form.innerHTML =
+"<input id='title' placeholder='Machine Name'>" +
+"<input id='price' placeholder='Price'>" +
+"<input id='location' placeholder='Location'>";
 }
 
-else if(type==="service"){
-form.innerHTML=`
-<input id="title" placeholder="Service Title">
-<input id="skill" placeholder="Skill">
-<input id="experience" placeholder="Experience">
-<input id="location" placeholder="Location">
-`;
+if(type === "service"){
+form.innerHTML =
+"<input id='title' placeholder='Service Title'>" +
+"<input id='location' placeholder='Location'>";
 }
 
-else if(type==="transport"){
-form.innerHTML=`
-<input id="title" placeholder="Transport Type">
-<input id="truckType" placeholder="Truck Type">
-<input id="capacity" placeholder="Capacity">
-<input id="location" placeholder="Location">
-`;
-}
-}catch(e){
-console.error("FORM ERROR:",e);
-}
+if(type === "transport"){
+form.innerHTML =
+"<input id='title' placeholder='Transport Type'>" +
+"<input id='location' placeholder='Location'>";
 }
 
-/* 🚀 SUBMIT */
+}
+
 async function submitListing(){
-try{
 
-const type=document.getElementById("postType").value;
+const title = document.getElementById("title");
+const location = document.getElementById("location");
+const price = document.getElementById("price");
 
-if(!type){
-alert("Please select type");
+if(!title || !location){
+alert("Please fill the form");
 return;
 }
 
-let data={
-type:type,
-title:document.getElementById("title")?.value || "",
-location:document.getElementById("location")?.value || ""
+const data = {
+title: title.value,
+location: location.value,
+price: price ? price.value : ""
 };
 
-if(type==="rent"||type==="sell"){
-data.category=document.getElementById("category")?.value||"";
-data.model=document.getElementById("model")?.value||"";
-data.year=document.getElementById("year")?.value||"";
-data.capacity=document.getElementById("capacity")?.value||"";
-data.origin=document.getElementById("origin")?.value||"";
-data.condition=document.getElementById("condition")?.value||"";
-data.price=document.getElementById("price")?.value||"";
-}
+try{
 
-if(type==="service"){
-data.skill=document.getElementById("skill")?.value||"";
-data.experience=document.getElementById("experience")?.value||"";
-}
-
-if(type==="transport"){
-data.truck_type=document.getElementById("truckType")?.value||"";
-data.capacity=document.getElementById("capacity")?.value||"";
-}
-
-const res=await fetch(`${SUPABASE_URL}/rest/v1/listings`,{
+const res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
 "apikey":SUPABASE_KEY,
-"Authorization":"Bearer "+SUPABASE_KEY
+"Authorization":"Bearer " + SUPABASE_KEY
 },
-body:JSON.stringify(data)
+body: JSON.stringify(data)
 });
 
 if(!res.ok){
 throw new Error("Insert failed");
 }
 
-alert("✅ Submitted successfully");
+alert("Listing submitted");
 loadListings();
 
 }catch(err){
-console.error("SUBMIT ERROR:",err);
-alert("❌ Submission failed");
-}
+console.log(err);
+alert("Submission failed");
 }
 
-/* 📦 LOAD */
+}
+
 async function loadListings(){
 
-const container=document.getElementById("listings");
-
-if(!container){
-console.log("No container");
-return;
-}
-
-container.innerHTML="Loading...";
+const container = document.getElementById("listings");
+container.innerHTML = "Loading...";
 
 try{
 
-const res=await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`,{
+const res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
 headers:{
 "apikey":SUPABASE_KEY,
-"Authorization":"Bearer "+SUPABASE_KEY
+"Authorization":"Bearer " + SUPABASE_KEY
 }
 });
 
-if(!res.ok){
-throw new Error("Fetch error: "+res.status);
-}
+const data = await res.json();
 
-const data=await res.json();
+container.innerHTML = "";
 
-if(!Array.isArray(data)){
-container.innerHTML="⚠️ Data error";
+if(!data || data.length === 0){
+container.innerHTML = "No listings yet";
 return;
 }
 
-if(data.length===0){
-container.innerHTML="No listings yet";
-return;
-}
-
-container.innerHTML="";
-
-data.forEach(i=>{
-container.innerHTML+=`
-<div class="listing-card">
-<span class="tag">${i.type||""}</span>
-<h3>${i.title||""}</h3>
-<p>${i.location||""}</p>
-<p>${i.price||""}</p>
-</div>
-`;
+data.forEach(function(i){
+container.innerHTML +=
+"<div class='listing-card'>" +
+"<h3>" + (i.title || "") + "</h3>" +
+"<p>" + (i.location || "") + "</p>" +
+"<p>" + (i.price || "") + "</p>" +
+"</div>";
 });
 
 }catch(err){
-console.error("LOAD ERROR:",err);
-container.innerHTML="<p style='color:red;'>Failed to load</p>";
+console.log(err);
+container.innerHTML = "Failed to load listings";
 }
 
 }
 
-/* 🔍 SEARCH */
 function search(){
 loadListings();
 }
 
-/* 🌐 LANGUAGE */
-function toggleLang(){
-lang=(lang==="en")?"am":"en";
-renderUI();
-}
-
-/* INIT */
 renderUI();
 loadListings();
 
