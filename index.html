@@ -15,6 +15,14 @@ header {background:#f4b400;color:black;text-align:center;padding:20px;}
 
 button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4b400;}
 
+select, input {
+width:100%;
+padding:10px;
+margin-top:8px;
+border-radius:6px;
+border:none;
+}
+
 .grid {
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -69,7 +77,22 @@ font-size:12px;
 <!-- CATEGORIES -->
 <div id="categories" class="grid"></div>
 
-<!-- LISTINGS (CRITICAL) -->
+<!-- POST FORM -->
+<h2>Post Listing</h2>
+
+<select id="postType" onchange="updateForm()">
+<option value="">Select Type</option>
+<option value="rent">Rent Machinery</option>
+<option value="sell">Sell Machinery</option>
+<option value="service">Service Provider</option>
+<option value="transport">Transport</option>
+</select>
+
+<div id="dynamicForm"></div>
+
+<button onclick="submitListing()">Submit</button>
+
+<!-- LISTINGS -->
 <div id="listings"></div>
 
 </div>
@@ -102,14 +125,12 @@ const t=T[lang];
 document.getElementById("hero").innerText=t.hero;
 document.getElementById("searchInput").placeholder=t.search;
 
-/* SERVICES */
 const services=document.getElementById("services");
 services.innerHTML="";
 t.services.forEach(s=>{
 services.innerHTML+=`<div class="card">${s}</div>`;
 });
 
-/* CATEGORIES */
 const cat=document.getElementById("categories");
 cat.innerHTML="";
 t.categories.forEach(c=>{
@@ -118,14 +139,12 @@ cat.innerHTML+=`<div class="card">${c}</div>`;
 
 }
 
-/* 🧪 TEST LISTINGS (GUARANTEED DISPLAY) */
+/* 📦 LOAD LISTINGS (DEMO FOR NOW) */
 function loadListings(){
 
 const container=document.getElementById("listings");
-
 container.innerHTML="";
 
-/* DEMO DATA */
 const demoData=[
 {title:"Excavator CAT 320",location:"Addis Ababa",price:"5000 ETB/day"},
 {title:"Bulldozer D6",location:"Adama",price:"2.5M ETB"},
@@ -175,6 +194,70 @@ function toggleLang(){
 lang = (lang==="en")?"am":"en";
 renderUI();
 loadListings();
+}
+
+/* 🧠 DYNAMIC FORM */
+function updateForm(){
+
+const type=document.getElementById("postType").value;
+const form=document.getElementById("dynamicForm");
+
+form.innerHTML="";
+
+if(type==="rent" || type==="sell"){
+form.innerHTML=`
+<input id="title" placeholder="Machine Name">
+<input id="category" placeholder="Category">
+<input id="model" placeholder="Model">
+<input id="year" placeholder="Year">
+<input id="capacity" placeholder="Capacity">
+<input id="origin" placeholder="Country of Origin">
+<input id="condition" placeholder="New / Used">
+<input id="price" placeholder="Price">
+<input id="location" placeholder="Location">
+`;
+}
+
+else if(type==="service"){
+form.innerHTML=`
+<input id="title" placeholder="Service Title">
+<input id="skill" placeholder="Skill">
+<input id="experience" placeholder="Experience">
+<input id="location" placeholder="Location">
+`;
+}
+
+else if(type==="transport"){
+form.innerHTML=`
+<input id="title" placeholder="Transport Type">
+<input id="truckType" placeholder="Truck Type">
+<input id="capacity" placeholder="Capacity">
+<input id="location" placeholder="Location">
+`;
+}
+
+}
+
+/* 🚀 SUBMIT */
+function submitListing(){
+
+const type=document.getElementById("postType").value;
+
+if(!type){
+alert("Please select type");
+return;
+}
+
+let data={
+type:type,
+title:document.getElementById("title")?.value || "",
+location:document.getElementById("location")?.value || ""
+};
+
+console.log("Submitted:", data);
+
+alert("Listing submitted (demo mode)");
+
 }
 
 /* INIT */
