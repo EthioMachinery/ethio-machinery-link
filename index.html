@@ -14,7 +14,7 @@ header {background:#f4b400;color:black;text-align:center;padding:20px;}
 button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4b400;}
 select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:none;}
 .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px;}
-.card {background:#222;padding:15px;border-radius:10px;text-align:center;}
+.card {background:#222;padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
 .listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
 .tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;}
 img {max-width:100%;border-radius:8px;margin-bottom:10px;}
@@ -64,7 +64,7 @@ img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 
 <script>
 
-console.log("EML IMAGE VERSION");
+console.log("EML FILTER VERSION");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -72,6 +72,9 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 /* LANGUAGE */
 var lang = "en";
+
+/* FILTER STATE */
+var currentFilter = "";
 
 var T = {
 en:{
@@ -128,11 +131,11 @@ for(var i=0;i<t.services.length;i++){
 s.innerHTML += "<div class='card'>" + t.services[i] + "</div>";
 }
 
-/* CATEGORIES */
+/* CATEGORIES (CLICKABLE) */
 var c = document.getElementById("categories");
 c.innerHTML = "";
 for(var j=0;j<t.categories.length;j++){
-c.innerHTML += "<div class='card'>" + t.categories[j] + "</div>";
+c.innerHTML += "<div class='card' onclick='filterCategory(\"" + t.categories[j] + "\")'>" + t.categories[j] + "</div>";
 }
 
 }catch(e){
@@ -176,6 +179,17 @@ form.innerHTML =
 
 }
 
+function filterCategory(category){
+currentFilter = category.toLowerCase();
+document.getElementById("searchInput").value = "";
+loadListings();
+}
+
+function search(){
+currentFilter = "";
+loadListings();
+}
+
 async function submitListing(){
 
 var title = document.getElementById("title");
@@ -190,7 +204,6 @@ return;
 
 var image_url = "";
 
-/* UPLOAD IMAGE */
 if(imageFile){
 try{
 var fileName = Date.now() + "_" + imageFile.name;
@@ -254,6 +267,8 @@ async function loadListings(){
 var container = document.getElementById("listings");
 container.innerHTML = "Loading...";
 
+var keyword = document.getElementById("searchInput").value.toLowerCase();
+
 try{
 
 var res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
@@ -272,8 +287,28 @@ container.innerHTML = "No listings yet";
 return;
 }
 
-for(var i=0;i<data.length;i++){
-var item = data[i];
+var filtered = data.filter(function(item){
+
+var matchSearch =
+(item.title || "").toLowerCase().includes(keyword) ||
+(item.location || "").toLowerCase().includes(keyword);
+
+var matchCategory =
+currentFilter === "" ||
+(item.title || "").toLowerCase().includes(currentFilter);
+
+return matchSearch && matchCategory;
+
+});
+
+if(filtered.length === 0){
+container.innerHTML = "No matching results";
+return;
+}
+
+for(var i=0;i<filtered.length;i++){
+var item = filtered[i];
+
 container.innerHTML +=
 "<div class='listing-card'>" +
 (item.image_url ? "<img src='" + item.image_url + "'>" : "") +
@@ -288,10 +323,6 @@ console.log(err);
 container.innerHTML = "Failed to load listings";
 }
 
-}
-
-function search(){
-loadListings();
 }
 
 /* INIT */
