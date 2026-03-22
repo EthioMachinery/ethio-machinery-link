@@ -63,7 +63,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <script>
 
-console.log("EML STABLE VERSION");
+console.log("EML FINAL STABLE");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -104,9 +104,7 @@ optTransport:"ትራንስፖርት"
 };
 
 function renderUI(){
-
 try{
-
 var t = T[lang];
 
 document.getElementById("hero").innerText = t.hero;
@@ -122,16 +120,16 @@ document.getElementById("optSell").innerText = t.optSell;
 document.getElementById("optService").innerText = t.optService;
 document.getElementById("optTransport").innerText = t.optTransport;
 
+/* SERVICES */
 var s = document.getElementById("services");
 s.innerHTML = "";
-
 for(var i=0;i<t.services.length;i++){
 s.innerHTML += "<div class='card'>" + t.services[i] + "</div>";
 }
 
+/* CATEGORIES */
 var c = document.getElementById("categories");
 c.innerHTML = "";
-
 for(var j=0;j<t.categories.length;j++){
 c.innerHTML += "<div class='card'>" + t.categories[j] + "</div>";
 }
@@ -139,14 +137,12 @@ c.innerHTML += "<div class='card'>" + t.categories[j] + "</div>";
 }catch(e){
 console.log("UI ERROR:", e);
 }
-
 }
 
 function toggleLang(){
-if(lang === "en"){ lang = "am"; }
-else{ lang = "en"; }
+lang = (lang === "en") ? "am" : "en";
 renderUI();
-updateForm(); // 🔥 keeps form language in sync
+updateForm(); // 🔥 keep form synced
 }
 
 function updateForm(){
@@ -183,7 +179,7 @@ var location = document.getElementById("location");
 var price = document.getElementById("price");
 
 if(!title || !location){
-alert("Please fill the form");
+alert(lang==="en"?"Please fill the form":"እባክዎ ፎርሙን ይሙሉ");
 return;
 }
 
@@ -209,12 +205,15 @@ if(!res.ok){
 throw new Error("Insert failed");
 }
 
-alert("Listing submitted");
+alert(lang==="en"?"Listing submitted":"ተሳክቷል");
+document.getElementById("dynamicForm").innerHTML="";
+document.getElementById("postType").value="";
+
 loadListings();
 
 }catch(err){
 console.log(err);
-alert("Submission failed");
+alert(lang==="en"?"Submission failed":"ስህተት ተፈጥሯል");
 }
 
 }
