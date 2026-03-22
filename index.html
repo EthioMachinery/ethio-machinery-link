@@ -17,6 +17,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 .card {background:#222;padding:15px;border-radius:10px;text-align:center;}
 .listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
 .tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;}
+img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 </style>
 </head>
 
@@ -63,7 +64,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <script>
 
-console.log("EML FINAL STABLE");
+console.log("EML IMAGE VERSION");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -142,7 +143,7 @@ console.log("UI ERROR:", e);
 function toggleLang(){
 lang = (lang === "en") ? "am" : "en";
 renderUI();
-updateForm(); // 🔥 keep form synced
+updateForm();
 }
 
 function updateForm(){
@@ -155,19 +156,22 @@ if(type === "rent" || type === "sell"){
 form.innerHTML =
 "<input id='title' placeholder='" + (lang==="en"?"Machine Name":"የማሽነሪ ስም") + "'>" +
 "<input id='price' placeholder='" + (lang==="en"?"Price":"ዋጋ") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input type='file' id='image'>";
 }
 
 if(type === "service"){
 form.innerHTML =
 "<input id='title' placeholder='" + (lang==="en"?"Service Title":"የአገልግሎት ርዕስ") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input type='file' id='image'>";
 }
 
 if(type === "transport"){
 form.innerHTML =
 "<input id='title' placeholder='" + (lang==="en"?"Transport Type":"የትራንስፖርት አይነት") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input type='file' id='image'>";
 }
 
 }
@@ -177,21 +181,51 @@ async function submitListing(){
 var title = document.getElementById("title");
 var location = document.getElementById("location");
 var price = document.getElementById("price");
+var imageFile = document.getElementById("image")?.files[0];
 
 if(!title || !location){
-alert(lang==="en"?"Please fill the form":"እባክዎ ፎርሙን ይሙሉ");
+alert("Fill required fields");
 return;
+}
+
+var image_url = "";
+
+/* UPLOAD IMAGE */
+if(imageFile){
+try{
+var fileName = Date.now() + "_" + imageFile.name;
+
+await fetch(
+SUPABASE_URL + "/storage/v1/object/machines/" + fileName,
+{
+method: "POST",
+headers: {
+"apikey": SUPABASE_KEY,
+"Authorization": "Bearer " + SUPABASE_KEY,
+"Content-Type": imageFile.type
+},
+body: imageFile
+}
+);
+
+image_url = SUPABASE_URL + "/storage/v1/object/public/machines/" + fileName;
+
+}catch(e){
+console.log(e);
+alert("Image upload failed");
+}
 }
 
 var data = {
 title: title.value,
 location: location.value,
-price: price ? price.value : ""
+price: price ? price.value : "",
+image_url: image_url
 };
 
 try{
 
-var res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
+await fetch(SUPABASE_URL + "/rest/v1/listings",{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
@@ -201,11 +235,8 @@ headers:{
 body: JSON.stringify(data)
 });
 
-if(!res.ok){
-throw new Error("Insert failed");
-}
+alert("Listing submitted");
 
-alert(lang==="en"?"Listing submitted":"ተሳክቷል");
 document.getElementById("dynamicForm").innerHTML="";
 document.getElementById("postType").value="";
 
@@ -213,7 +244,7 @@ loadListings();
 
 }catch(err){
 console.log(err);
-alert(lang==="en"?"Submission failed":"ስህተት ተፈጥሯል");
+alert("Submission failed");
 }
 
 }
@@ -245,6 +276,7 @@ for(var i=0;i<data.length;i++){
 var item = data[i];
 container.innerHTML +=
 "<div class='listing-card'>" +
+(item.image_url ? "<img src='" + item.image_url + "'>" : "") +
 "<h3>" + (item.title || "") + "</h3>" +
 "<p>" + (item.location || "") + "</p>" +
 "<p>" + (item.price || "") + "</p>" +
