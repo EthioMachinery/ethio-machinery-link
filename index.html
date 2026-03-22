@@ -15,7 +15,7 @@ button {padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4
 select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:none;}
 .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px;}
 .card {background:#222;padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
-.listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
+.listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;cursor:pointer;}
 .tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-block;margin-bottom:5px;}
 img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 </style>
@@ -64,7 +64,7 @@ img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 
 <script>
 
-console.log("EML TYPE VERSION");
+console.log("EML DETAIL VIEW VERSION");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -239,6 +239,7 @@ document.getElementById("postType").value="";
 loadListings();
 }
 
+/* 🔥 UPDATED LISTING (CLICKABLE) */
 async function loadListings(){
 
 var container = document.getElementById("listings");
@@ -277,7 +278,7 @@ return;
 filtered.forEach(function(item){
 
 container.innerHTML +=
-"<div class='listing-card'>" +
+"<div class='listing-card' onclick='openDetails(" + JSON.stringify(item).replace(/"/g,'&quot;') + ")'>" +
 "<span class='tag'>" + (item.type || "Listing") + "</span>" +
 (item.image_url ? "<img src='" + item.image_url + "'>" : "") +
 "<h3>" + (item.title || "") + "</h3>" +
@@ -286,6 +287,29 @@ container.innerHTML +=
 "</div>";
 
 });
+}
+
+/* 🔥 DETAIL VIEW */
+function openDetails(item){
+
+var container = document.getElementById("listings");
+
+container.innerHTML =
+"<div class='listing-card'>" +
+
+"<button onclick='loadListings()'>⬅ Back</button>" +
+
+"<span class='tag'>" + (item.type || "Listing") + "</span>" +
+
+(item.image_url ? "<img src='" + item.image_url + "'>" : "") +
+
+"<h2>" + (item.title || "") + "</h2>" +
+
+"<p><b>Location:</b> " + (item.location || "") + "</p>" +
+
+(item.price ? "<p><b>Price:</b> " + item.price + "</p>" : "") +
+
+"</div>";
 }
 
 /* INIT */
