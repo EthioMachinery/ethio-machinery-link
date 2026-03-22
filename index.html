@@ -29,7 +29,6 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 <button onclick="toggleLang()" style="font-size:16px;background:none;border:none;cursor:pointer;">
 🌐 አማ/EN
 </button>
-
 </header>
 
 <div class="container">
@@ -38,7 +37,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <div class="search-box">
 <input id="searchInput">
-<button onclick="search()">Search</button>
+<button id="searchBtn" onclick="search()"></button>
 </div>
 
 <div id="services" class="grid"></div>
@@ -48,10 +47,10 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <select id="postType" onchange="updateForm()">
 <option value="" id="selectType"></option>
-<option value="rent">Rent Machinery</option>
-<option value="sell">Sell Machinery</option>
-<option value="service">Service Provider</option>
-<option value="transport">Transport</option>
+<option value="rent" id="optRent"></option>
+<option value="sell" id="optSell"></option>
+<option value="service" id="optService"></option>
+<option value="transport" id="optTransport"></option>
 </select>
 
 <div id="dynamicForm"></div>
@@ -64,7 +63,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <script>
 
-console.log("EML FIXED VERSION");
+console.log("EML STABLE VERSION");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -77,20 +76,30 @@ var T = {
 en:{
 hero:"Find, Rent, Buy Machinery",
 search:"Search...",
+searchBtn:"Search",
 services:["Rent","Buy","Sell","Service","Transport"],
 categories:["Excavator","Bulldozer","Crane","Loader"],
 postTitle:"Post Listing",
 selectType:"Select Type",
-submit:"Submit"
+submit:"Submit",
+optRent:"Rent Machinery",
+optSell:"Sell Machinery",
+optService:"Service Provider",
+optTransport:"Transport"
 },
 am:{
 hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",
 search:"ፈልግ...",
+searchBtn:"ፈልግ",
 services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
 categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"],
 postTitle:"ማስታወቂያ አስገባ",
 selectType:"አይነት ምረጥ",
-submit:"አስገባ"
+submit:"አስገባ",
+optRent:"ኪራይ ማሽነሪ",
+optSell:"ሽያጭ ማሽነሪ",
+optService:"አገልግሎት",
+optTransport:"ትራንስፖርት"
 }
 };
 
@@ -102,10 +111,16 @@ var t = T[lang];
 
 document.getElementById("hero").innerText = t.hero;
 document.getElementById("searchInput").placeholder = t.search;
+document.getElementById("searchBtn").innerText = t.searchBtn;
 
 document.getElementById("postTitle").innerText = t.postTitle;
 document.getElementById("selectType").innerText = t.selectType;
 document.getElementById("submitBtn").innerText = t.submit;
+
+document.getElementById("optRent").innerText = t.optRent;
+document.getElementById("optSell").innerText = t.optSell;
+document.getElementById("optService").innerText = t.optService;
+document.getElementById("optTransport").innerText = t.optTransport;
 
 var s = document.getElementById("services");
 s.innerHTML = "";
@@ -131,6 +146,7 @@ function toggleLang(){
 if(lang === "en"){ lang = "am"; }
 else{ lang = "en"; }
 renderUI();
+updateForm(); // 🔥 keeps form language in sync
 }
 
 function updateForm(){
@@ -141,21 +157,21 @@ form.innerHTML = "";
 
 if(type === "rent" || type === "sell"){
 form.innerHTML =
-"<input id='title' placeholder='Machine Name'>" +
-"<input id='price' placeholder='Price'>" +
-"<input id='location' placeholder='Location'>";
+"<input id='title' placeholder='" + (lang==="en"?"Machine Name":"የማሽነሪ ስም") + "'>" +
+"<input id='price' placeholder='" + (lang==="en"?"Price":"ዋጋ") + "'>" +
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
 }
 
 if(type === "service"){
 form.innerHTML =
-"<input id='title' placeholder='Service Title'>" +
-"<input id='location' placeholder='Location'>";
+"<input id='title' placeholder='" + (lang==="en"?"Service Title":"የአገልግሎት ርዕስ") + "'>" +
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
 }
 
 if(type === "transport"){
 form.innerHTML =
-"<input id='title' placeholder='Transport Type'>" +
-"<input id='location' placeholder='Location'>";
+"<input id='title' placeholder='" + (lang==="en"?"Transport Type":"የትራንስፖርት አይነት") + "'>" +
+"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>";
 }
 
 }
