@@ -60,17 +60,16 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <script>
 
-console.log("EML script started");
+console.log("EML FIXED VERSION");
 
-/* SUPABASE KEYS */
-const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
+/* ✅ FIXED SUPABASE KEYS (NO LINE BREAK!) */
+const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
 /* LANGUAGE */
-let lang = "en";
+var lang = "en";
 
-const T = {
+var T = {
 en:{
 hero:"Find, Rent, Buy Machinery",
 search:"Search...",
@@ -87,24 +86,30 @@ categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"]
 
 function renderUI(){
 
-const t = T[lang];
+try{
+
+var t = T[lang];
 
 document.getElementById("hero").innerText = t.hero;
 document.getElementById("searchInput").placeholder = t.search;
 
-const services = document.getElementById("services");
-services.innerHTML = "";
+var s = document.getElementById("services");
+s.innerHTML = "";
 
-t.services.forEach(function(s){
-services.innerHTML += "<div class='card'>" + s + "</div>";
-});
+for(var i=0;i<t.services.length;i++){
+s.innerHTML += "<div class='card'>" + t.services[i] + "</div>";
+}
 
-const cat = document.getElementById("categories");
-cat.innerHTML = "";
+var c = document.getElementById("categories");
+c.innerHTML = "";
 
-t.categories.forEach(function(c){
-cat.innerHTML += "<div class='card'>" + c + "</div>";
-});
+for(var j=0;j<t.categories.length;j++){
+c.innerHTML += "<div class='card'>" + t.categories[j] + "</div>";
+}
+
+}catch(e){
+console.log("UI ERROR:", e);
+}
 
 }
 
@@ -116,8 +121,8 @@ renderUI();
 
 function updateForm(){
 
-const type = document.getElementById("postType").value;
-const form = document.getElementById("dynamicForm");
+var type = document.getElementById("postType").value;
+var form = document.getElementById("dynamicForm");
 form.innerHTML = "";
 
 if(type === "rent" || type === "sell"){
@@ -143,16 +148,16 @@ form.innerHTML =
 
 async function submitListing(){
 
-const title = document.getElementById("title");
-const location = document.getElementById("location");
-const price = document.getElementById("price");
+var title = document.getElementById("title");
+var location = document.getElementById("location");
+var price = document.getElementById("price");
 
 if(!title || !location){
 alert("Please fill the form");
 return;
 }
 
-const data = {
+var data = {
 title: title.value,
 location: location.value,
 price: price ? price.value : ""
@@ -160,7 +165,7 @@ price: price ? price.value : ""
 
 try{
 
-const res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
+var res = await fetch(SUPABASE_URL + "/rest/v1/listings",{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
@@ -186,19 +191,19 @@ alert("Submission failed");
 
 async function loadListings(){
 
-const container = document.getElementById("listings");
+var container = document.getElementById("listings");
 container.innerHTML = "Loading...";
 
 try{
 
-const res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
+var res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
 headers:{
 "apikey":SUPABASE_KEY,
 "Authorization":"Bearer " + SUPABASE_KEY
 }
 });
 
-const data = await res.json();
+var data = await res.json();
 
 container.innerHTML = "";
 
@@ -207,14 +212,15 @@ container.innerHTML = "No listings yet";
 return;
 }
 
-data.forEach(function(i){
+for(var i=0;i<data.length;i++){
+var item = data[i];
 container.innerHTML +=
 "<div class='listing-card'>" +
-"<h3>" + (i.title || "") + "</h3>" +
-"<p>" + (i.location || "") + "</p>" +
-"<p>" + (i.price || "") + "</p>" +
+"<h3>" + (item.title || "") + "</h3>" +
+"<p>" + (item.location || "") + "</p>" +
+"<p>" + (item.price || "") + "</p>" +
 "</div>";
-});
+}
 
 }catch(err){
 console.log(err);
@@ -227,6 +233,7 @@ function search(){
 loadListings();
 }
 
+/* INIT */
 renderUI();
 loadListings();
 
