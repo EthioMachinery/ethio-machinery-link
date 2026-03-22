@@ -16,7 +16,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px;}
 .card {background:#222;padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
 .listing-card {background:#222;padding:15px;border-radius:10px;margin-top:10px;}
-.tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;}
+.tag {background:#f4b400;color:black;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-block;margin-bottom:5px;}
 img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 </style>
 </head>
@@ -64,7 +64,7 @@ img {max-width:100%;border-radius:8px;margin-bottom:10px;}
 
 <script>
 
-console.log("EML FILTER VERSION");
+console.log("EML TYPE VERSION");
 
 /* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
@@ -73,7 +73,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 /* LANGUAGE */
 var lang = "en";
 
-/* FILTER STATE */
+/* FILTER */
 var currentFilter = "";
 
 var T = {
@@ -108,7 +108,6 @@ optTransport:"ትራንስፖርት"
 };
 
 function renderUI(){
-try{
 var t = T[lang];
 
 document.getElementById("hero").innerText = t.hero;
@@ -131,15 +130,11 @@ for(var i=0;i<t.services.length;i++){
 s.innerHTML += "<div class='card'>" + t.services[i] + "</div>";
 }
 
-/* CATEGORIES (CLICKABLE) */
+/* CATEGORIES */
 var c = document.getElementById("categories");
 c.innerHTML = "";
 for(var j=0;j<t.categories.length;j++){
 c.innerHTML += "<div class='card' onclick='filterCategory(\"" + t.categories[j] + "\")'>" + t.categories[j] + "</div>";
-}
-
-}catch(e){
-console.log("UI ERROR:", e);
 }
 }
 
@@ -150,38 +145,35 @@ updateForm();
 }
 
 function updateForm(){
-
 var type = document.getElementById("postType").value;
 var form = document.getElementById("dynamicForm");
 form.innerHTML = "";
 
 if(type === "rent" || type === "sell"){
 form.innerHTML =
-"<input id='title' placeholder='" + (lang==="en"?"Machine Name":"የማሽነሪ ስም") + "'>" +
-"<input id='price' placeholder='" + (lang==="en"?"Price":"ዋጋ") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input id='title' placeholder='Machine Name'>" +
+"<input id='price' placeholder='Price'>" +
+"<input id='location' placeholder='Location'>" +
 "<input type='file' id='image'>";
 }
 
 if(type === "service"){
 form.innerHTML =
-"<input id='title' placeholder='" + (lang==="en"?"Service Title":"የአገልግሎት ርዕስ") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input id='title' placeholder='Service Title'>" +
+"<input id='location' placeholder='Location'>" +
 "<input type='file' id='image'>";
 }
 
 if(type === "transport"){
 form.innerHTML =
-"<input id='title' placeholder='" + (lang==="en"?"Transport Type":"የትራንስፖርት አይነት") + "'>" +
-"<input id='location' placeholder='" + (lang==="en"?"Location":"ቦታ") + "'>" +
+"<input id='title' placeholder='Transport Type'>" +
+"<input id='location' placeholder='Location'>" +
 "<input type='file' id='image'>";
 }
-
 }
 
 function filterCategory(category){
 currentFilter = category.toLowerCase();
-document.getElementById("searchInput").value = "";
 loadListings();
 }
 
@@ -192,6 +184,7 @@ loadListings();
 
 async function submitListing(){
 
+var type = document.getElementById("postType").value;
 var title = document.getElementById("title");
 var location = document.getElementById("location");
 var price = document.getElementById("price");
@@ -205,38 +198,28 @@ return;
 var image_url = "";
 
 if(imageFile){
-try{
 var fileName = Date.now() + "_" + imageFile.name;
 
-await fetch(
-SUPABASE_URL + "/storage/v1/object/machines/" + fileName,
-{
-method: "POST",
-headers: {
-"apikey": SUPABASE_KEY,
-"Authorization": "Bearer " + SUPABASE_KEY,
-"Content-Type": imageFile.type
+await fetch(SUPABASE_URL + "/storage/v1/object/machines/" + fileName,{
+method:"POST",
+headers:{
+"apikey":SUPABASE_KEY,
+"Authorization":"Bearer " + SUPABASE_KEY,
+"Content-Type":imageFile.type
 },
-body: imageFile
-}
-);
+body:imageFile
+});
 
 image_url = SUPABASE_URL + "/storage/v1/object/public/machines/" + fileName;
-
-}catch(e){
-console.log(e);
-alert("Image upload failed");
-}
 }
 
 var data = {
-title: title.value,
-location: location.value,
-price: price ? price.value : "",
-image_url: image_url
+type:type,
+title:title.value,
+location:location.value,
+price:price ? price.value : "",
+image_url:image_url
 };
-
-try{
 
 await fetch(SUPABASE_URL + "/rest/v1/listings",{
 method:"POST",
@@ -245,7 +228,7 @@ headers:{
 "apikey":SUPABASE_KEY,
 "Authorization":"Bearer " + SUPABASE_KEY
 },
-body: JSON.stringify(data)
+body:JSON.stringify(data)
 });
 
 alert("Listing submitted");
@@ -254,12 +237,6 @@ document.getElementById("dynamicForm").innerHTML="";
 document.getElementById("postType").value="";
 
 loadListings();
-
-}catch(err){
-console.log(err);
-alert("Submission failed");
-}
-
 }
 
 async function loadListings(){
@@ -269,8 +246,6 @@ container.innerHTML = "Loading...";
 
 var keyword = document.getElementById("searchInput").value.toLowerCase();
 
-try{
-
 var res = await fetch(SUPABASE_URL + "/rest/v1/listings?select=*",{
 headers:{
 "apikey":SUPABASE_KEY,
@@ -279,13 +254,7 @@ headers:{
 });
 
 var data = await res.json();
-
 container.innerHTML = "";
-
-if(!data || data.length === 0){
-container.innerHTML = "No listings yet";
-return;
-}
 
 var filtered = data.filter(function(item){
 
@@ -298,31 +267,25 @@ currentFilter === "" ||
 (item.title || "").toLowerCase().includes(currentFilter);
 
 return matchSearch && matchCategory;
-
 });
 
 if(filtered.length === 0){
-container.innerHTML = "No matching results";
+container.innerHTML = "No results";
 return;
 }
 
-for(var i=0;i<filtered.length;i++){
-var item = filtered[i];
+filtered.forEach(function(item){
 
 container.innerHTML +=
 "<div class='listing-card'>" +
+"<span class='tag'>" + (item.type || "Listing") + "</span>" +
 (item.image_url ? "<img src='" + item.image_url + "'>" : "") +
 "<h3>" + (item.title || "") + "</h3>" +
 "<p>" + (item.location || "") + "</p>" +
 "<p>" + (item.price || "") + "</p>" +
 "</div>";
-}
 
-}catch(err){
-console.log(err);
-container.innerHTML = "Failed to load listings";
-}
-
+});
 }
 
 /* INIT */
