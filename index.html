@@ -25,9 +25,11 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 <header>
 <h2>ኢትዮ ማሽነሪ አገናኝ</h2>
 <p>Ethio Machinery Link (EML)</p>
-<button onclick="toggleLang()" style="font-size:20px;background:none;border:none;cursor:pointer;">
-🌐
+
+<button onclick="toggleLang()" style="font-size:16px;background:none;border:none;cursor:pointer;">
+🌐 አማ/EN
 </button>
+
 </header>
 
 <div class="container">
@@ -42,10 +44,10 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 <div id="services" class="grid"></div>
 <div id="categories" class="grid"></div>
 
-<h2>Post Listing</h2>
+<h2 id="postTitle"></h2>
 
 <select id="postType" onchange="updateForm()">
-<option value="">Select Type</option>
+<option value="" id="selectType"></option>
 <option value="rent">Rent Machinery</option>
 <option value="sell">Sell Machinery</option>
 <option value="service">Service Provider</option>
@@ -54,7 +56,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 <div id="dynamicForm"></div>
 
-<button onclick="submitListing()">Submit</button>
+<button id="submitBtn" onclick="submitListing()"></button>
 
 <div id="listings"></div>
 
@@ -64,7 +66,7 @@ select,input {width:100%;padding:10px;margin-top:8px;border-radius:6px;border:no
 
 console.log("EML FIXED VERSION");
 
-/* ✅ FIXED SUPABASE KEYS (NO LINE BREAK!) */
+/* SUPABASE */
 const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
@@ -76,13 +78,19 @@ en:{
 hero:"Find, Rent, Buy Machinery",
 search:"Search...",
 services:["Rent","Buy","Sell","Service","Transport"],
-categories:["Excavator","Bulldozer","Crane","Loader"]
+categories:["Excavator","Bulldozer","Crane","Loader"],
+postTitle:"Post Listing",
+selectType:"Select Type",
+submit:"Submit"
 },
 am:{
 hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",
 search:"ፈልግ...",
 services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
-categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"]
+categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"],
+postTitle:"ማስታወቂያ አስገባ",
+selectType:"አይነት ምረጥ",
+submit:"አስገባ"
 }
 };
 
@@ -94,6 +102,10 @@ var t = T[lang];
 
 document.getElementById("hero").innerText = t.hero;
 document.getElementById("searchInput").placeholder = t.search;
+
+document.getElementById("postTitle").innerText = t.postTitle;
+document.getElementById("selectType").innerText = t.selectType;
+document.getElementById("submitBtn").innerText = t.submit;
 
 var s = document.getElementById("services");
 s.innerHTML = "";
