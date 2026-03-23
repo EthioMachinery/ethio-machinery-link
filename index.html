@@ -109,10 +109,9 @@
 <script defer>
   console.log("EML Master Version");
 
-  /* SUPABASE PLACEHOLDERS */
-  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA;
+  /* SUPABASE CONFIG */
+  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
   /* LANGUAGE */
   var lang = "en";
@@ -134,10 +133,4 @@
   function renderUI(){
     var t = T[lang];
     document.getElementById("hero").innerText = t.hero;
-    document.getElementById("searchInput").placeholder = t.search;
-    document.getElementById("searchBtn").innerText = t.searchBtn;
-    document.getElementById("postTitle").innerText = t.postTitle;
-    document.getElementById("selectType").innerText = t.selectType;
-    document.getElementById("submitBtn").innerText = t.submit;
-    document.getElementById("optRent").innerText = t.optRent;
-    document.getElementById("optSell").innerText = t.optSell
+    document.getElementById("searchInput").
