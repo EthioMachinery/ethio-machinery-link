@@ -9,6 +9,11 @@
   <meta name="description" content="Ethio Machinery Link (EML) - ኢትዮ ማሽነሪ አገናኝ. Find, rent, buy, sell, and service machinery in Ethiopia.">
   <link rel="canonical" href="https://ethio-machinery-link.vercel.app">
 
+  <!-- Security Meta -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co; img-src 'self' https://*.supabase.co data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://*.supabase.co;">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
+
   <!-- Open Graph -->
   <meta property="og:title" content="Ethio Machinery Link (EML)">
   <meta property="og:description" content="Find, rent, buy, sell, and service machinery in Ethiopia.">
@@ -24,9 +29,6 @@
 
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
-
-  <!-- Preload critical assets -->
-  <link rel="preload" href="/favicon.ico" as="image">
 
   <!-- Minified CSS -->
   <style>
@@ -96,15 +98,22 @@
 </main>
 
 <script defer>
+  console.log("EML Secure Version");
+
+  /* SUPABASE PLACEHOLDERS */
+  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
+";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
+
   // Existing JS logic remains unchanged
-  // Added alt attributes and lazy loading for images in loadListings()
-  function loadListings(){
+  // Error handling added for failed fetch
+  async function loadListings(){
     var container=document.getElementById("listings");
     container.innerHTML="Loading...";
-    var keyword=document.getElementById("searchInput").value.toLowerCase();
-    fetch(SUPABASE_URL+"/rest/v1/listings?select=*",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}})
-    .then(res=>res.json())
-    .then(data=>{
+    try {
+      var keyword=document.getElementById("searchInput").value.toLowerCase();
+      var res=await fetch(SUPABASE_URL+"/rest/v1/listings?select=*",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}});
+      var data=await res.json();
       container.innerHTML="";
       var filtered=data.filter(item=>{
         var matchSearch=(item.title||"").toLowerCase().includes(keyword)||(item.location||"").toLowerCase().includes(keyword);
@@ -122,8 +131,16 @@
         "<p>"+(item.price||"")+"</p>"+
         "</div>";
       });
-    });
+    } catch(e){
+      container.innerHTML="⚠️ Error loading listings. Please try again.";
+      console.error(e);
+    }
   }
+
+  /* Analytics Placeholder */
+  // Example: Plausible script
+  // <script defer data-domain="ethio-machinery-link.vercel.app" src="https://plausible.io/js/script.js"></script>
+
 </script>
 
 </body>
