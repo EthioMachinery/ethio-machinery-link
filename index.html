@@ -23,21 +23,21 @@
     .msg.success { background:#e6ffea; color:#0a7; border:1px solid #bfeecf; }
     small { color:#666; }
   </style>
+
   <script type="module">
-    // Replace these with your Supabase project values
+    // Supabase project values (inserted as requested)
     const SUPABASE_URL = 'https://rmdpzvyypnkhadoqoidr.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA';
 
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Utility helpers
+    // Helpers
     const isEmail = (s) => /\S+@\S+\.\S+/.test(s);
     const isDigits = (s) => /^\d+$/.test(s);
-    const normalizePhone = (p) => p.replace(/\s|\-|\(|\)/g, ''); // remove spaces, dashes, parens
+    const normalizePhone = (p) => p.replace(/\s|\-|\(|\)|\+|[^\d]/g, '');
     const dummyEmailForPhone = (phone) => `${phone}@eml.local`;
 
-    // DOM helpers
     const $ = (sel) => document.querySelector(sel);
     const showMsg = (el, text, type='error') => {
       el.textContent = text;
@@ -46,7 +46,6 @@
     };
     const hideMsg = (el) => { el.style.display = 'none'; el.textContent = ''; };
 
-    // Sign-up UI logic
     document.addEventListener('DOMContentLoaded', () => {
       const signupPhoneTab = $('#tab-phone');
       const signupEmailTab = $('#tab-email');
@@ -92,31 +91,29 @@
         });
 
         if (error) {
-          // If email already exists, show friendly message
           showMsg(signupMsg, error.message || 'Sign up failed.');
           return;
         }
 
-        // Insert into profiles table
         const userId = data?.user?.id;
         if (!userId) {
           showMsg(signupMsg, 'Unexpected error: user id missing.');
           return;
         }
 
+        // Insert into profiles table
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({ id: userId, phone });
 
         if (insertError) {
-          // If phone unique constraint fails, delete the created auth user to avoid orphaned account
-          await supabase.auth.admin.deleteUser(userId).catch(()=>{});
-          showMsg(signupMsg, insertError.message || 'Failed to save phone number.');
+          // Do not attempt admin actions from client. Show helpful message.
+          // Common cause: phone already exists.
+          showMsg(signupMsg, insertError.message || 'Failed to save phone number. If the phone is already registered, try logging in.');
           return;
         }
 
         showMsg(signupMsg, 'Sign up successful. You can now log in with phone + password.', 'success');
-        // Optionally clear fields
         $('#signup-phone').value = '';
         $('#signup-phone-password').value = '';
       });
@@ -127,7 +124,8 @@
         hideMsg(signupMsg);
         const email = $('#signup-email').value.trim();
         const password = $('#signup-email-password').value;
-        const phoneOptional = normalizePhone($('#signup-email-phone').value.trim());
+        const phoneOptionalRaw = $('#signup-email-phone').value.trim();
+        const phoneOptional = phoneOptionalRaw ? normalizePhone(phoneOptionalRaw) : '';
 
         if (!email || !password) { showMsg(signupMsg, 'Please enter email and password.'); return; }
         if (!isEmail(email)) { showMsg(signupMsg, 'Please enter a valid email.'); return; }
@@ -138,14 +136,12 @@
         const userId = data?.user?.id;
         if (!userId) { showMsg(signupMsg, 'Unexpected error: user id missing.'); return; }
 
-        // If user provided phone, try to save it
         if (phoneOptional) {
           const { error: insertError } = await supabase
             .from('profiles')
             .insert({ id: userId, phone: phoneOptional });
 
           if (insertError) {
-            // Not fatal: show message but account exists
             showMsg(signupMsg, 'Account created, but failed to save phone: ' + insertError.message);
             return;
           }
@@ -162,24 +158,25 @@
       $('#login-btn').addEventListener('click', async (e) => {
         e.preventDefault();
         hideMsg(loginMsg);
-        let identifier = $('#login-identifier').value.trim();
+        let identifierRaw = $('#login-identifier').value.trim();
         const password = $('#login-password').value;
-        if (!identifier || !password) { showMsg(loginMsg, 'Please enter email or phone and password.'); return; }
-
-        identifier = normalizePhone(identifier);
+        if (!identifierRaw || !password) { showMsg(loginMsg, 'Please enter email or phone and password.'); return; }
 
         // Decide if email or phone
-        if (isEmail(identifier)) {
+        if (isEmail(identifierRaw)) {
           // Email login
           const { data, error } = await supabase.auth.signInWithPassword({
-            email: identifier,
+            email: identifierRaw,
             password,
           });
           if (error) { showMsg(loginMsg, error.message || 'Login failed.'); return; }
           showMsg(loginMsg, 'Login successful (email).', 'success');
-        } else if (isDigits(identifier)) {
-          // Phone login: generate dummy email and sign in
-          const dummyEmail = dummyEmailForPhone(identifier);
+        } else {
+          // Treat as phone. Normalize then validate digits.
+          const phone = normalizePhone(identifierRaw);
+          if (!isDigits(phone)) { showMsg(loginMsg, 'Identifier must be a valid email or digits-only phone number.'); return; }
+
+          const dummyEmail = dummyEmailForPhone(phone);
 
           const { data, error } = await supabase.auth.signInWithPassword({
             email: dummyEmail,
@@ -187,12 +184,11 @@
           });
 
           if (error) {
-            // If user typed a phone that doesn't exist, give a helpful message
-            // We can check profiles table to see if phone exists
+            // Check if phone exists to give clearer message
             const { data: profileData } = await supabase
               .from('profiles')
               .select('id')
-              .eq('phone', identifier)
+              .eq('phone', phone)
               .limit(1)
               .maybeSingle();
 
@@ -204,12 +200,10 @@
             return;
           }
           showMsg(loginMsg, 'Login successful (phone).', 'success');
-        } else {
-          showMsg(loginMsg, 'Identifier must be a valid email or digits-only phone number.');
         }
       });
 
-      // Optional: quick sign-out button
+      // Sign-out
       $('#logout-btn').addEventListener('click', async () => {
         await supabase.auth.signOut();
         alert('Signed out.');
@@ -281,10 +275,10 @@
   <div class="card">
     <h2>Notes and Deployment</h2>
     <ul>
-      <li><strong>Replace</strong> <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> at the top of the script with your project values.</li>
+      <li><strong>Supabase values</strong> are already inserted at the top of the script. The anon key is safe for client use. Do not expose any admin keys in the frontend.</li>
       <li>The script uses a <strong>dummy email</strong> pattern: <code>&lt;phone&gt;@eml.local</code>. Keep this consistent across sign-up and login.</li>
-      <li>Ensure your <strong>profiles</strong> table exists with columns: <code>id uuid primary key</code>, <code>phone text unique</code>, <code>created_at timestamp default now()</code>.</li>
-      <li>For production, add stronger validation, rate limiting, and HTTPS hosting. Consider server-side checks if you need extra security.</li>
+      <li>Ensure your <strong>profiles</strong> table exists with columns: <code>id uuid primary key references auth.users(id) on delete cascade</code>, <code>phone text unique</code>, <code>created_at timestamptz default now()</code>.</li>
+      <li>For production, add stronger validation, rate limiting, and HTTPS hosting. Use server-side admin actions only from a secure backend.</li>
     </ul>
   </div>
 </body>
