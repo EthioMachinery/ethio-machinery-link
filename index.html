@@ -110,49 +110,29 @@
   console.log("EML Master Version");
 
   /* SUPABASE PLACEHOLDERS */
-  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
-";
+  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
-  // Language toggle, UI rendering, form updates, search, submitListing, loadListings, openDetails
-  // (same logic as before, with accessibility and error handling improvements)
+  /* LANGUAGE */
+  var lang = "en";
+  var T = {
+    en:{hero:"Find, Rent, Buy Machinery",search:"Search...",searchBtn:"Search",
+        services:["Rent","Buy","Sell","Service","Transport"],
+        categories:["Excavator","Bulldozer","Crane","Loader"],
+        postTitle:"Post Listing",selectType:"Select Type",submit:"Submit",
+        optRent:"Rent Machinery",optSell:"Sell Machinery",
+        optService:"Service Provider",optTransport:"Transport"},
+    am:{hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",search:"ፈልግ...",searchBtn:"ፈልግ",
+        services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
+        categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"],
+        postTitle:"ማስታወቂያ አስገባ",selectType:"አይነት ምረጥ",submit:"አስገባ",
+        optRent:"ኪራይ ማሽነሪ",optSell:"ሽያጭ ማሽነሪ",
+        optService:"አገልግሎት",optTransport:"ትራንስፖርት"}
+  };
 
-  // Example: loadListings with alt text + lazy loading
-  async function loadListings(){
-    var container=document.getElementById("listings");
-    container.innerHTML="Loading...";
-    try {
-      var keyword=document.getElementById("searchInput").value.toLowerCase();
-      var res=await fetch(SUPABASE_URL+"/rest/v1/listings?select=*",{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}});
-      var data=await res.json();
-      container.innerHTML="";
-      var filtered=data.filter(item=>{
-        var matchSearch=(item.title||"").toLowerCase().includes(keyword)||(item.location||"").toLowerCase().includes(keyword);
-        var matchCategory=currentFilter===""||(item.title||"").toLowerCase().includes(currentFilter);
-        return matchSearch&&matchCategory;
-      });
-      if(filtered.length===0){container.innerHTML="No results";return;}
-      filtered.forEach(item=>{
-        container.innerHTML+=
-        "<div class='listing-card' onclick='openDetails("+JSON.stringify(item).replace(/"/g,'&quot;')+")'>"+
-        "<span class='tag'>"+(item.type||"Listing")+"</span>"+
-        (item.image_url?"<img src='"+item.image_url+"' alt='Image of "+(item.title||"machinery")+"' loading='lazy'>":"")+
-        "<h3>"+(item.title||"")+"</h3>"+
-        "<p>"+(item.location||"")+"</p>"+
-        "<p>"+(item.price||"")+"</p>"+
-        "</div>";
-      });
-    } catch(e){
-      container.innerHTML="⚠️ Error loading listings. Please try again.";
-      console.error(e);
-    }
-  }
-
-  /* Analytics Placeholder */
-  // Example: Plausible script
-  // <script defer data-domain="ethio-machinery-link.vercel.app" src="https://plausible.io/js/script.js"></script>
-
-</script>
-
-</body>
-</html>
+  function renderUI(){
+    var t = T[lang];
+    document.getElementById("hero").innerText = t.hero;
+    document.getElementById("searchInput").placeholder = t.search;
+    document.getElementById("searchBtn").innerText = t.searchBtn;
+    document
