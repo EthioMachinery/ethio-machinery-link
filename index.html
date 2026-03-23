@@ -30,6 +30,9 @@
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
+  <!-- Preload critical assets -->
+  <link rel="preload" href="/favicon.ico" as="image">
+
   <!-- Minified CSS -->
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff}
@@ -45,6 +48,7 @@
     .listing-card{background:#222;padding:15px;border-radius:10px;margin-top:10px;cursor:pointer}
     .tag{background:#f4b400;color:#000;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-block;margin-bottom:5px}
     img{max-width:100%;border-radius:8px;margin-bottom:10px}
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
   </style>
 </head>
 
@@ -97,16 +101,23 @@
 
 </main>
 
+<footer role="contentinfo" style="text-align:center;padding:20px;background:#222;color:#aaa;">
+  <p>&copy; 2026 Ethio Machinery Link (EML). All rights reserved.</p>
+  <p><a href="mailto:machinerymatchmaker@gmail.com" style="color:#f4b400;">Contact Us</a></p>
+</footer>
+
 <script defer>
-  console.log("EML Secure Version");
+  console.log("EML Master Version");
 
   /* SUPABASE PLACEHOLDERS */
   const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co
 ";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
 
-  // Existing JS logic remains unchanged
-  // Error handling added for failed fetch
+  // Language toggle, UI rendering, form updates, search, submitListing, loadListings, openDetails
+  // (same logic as before, with accessibility and error handling improvements)
+
+  // Example: loadListings with alt text + lazy loading
   async function loadListings(){
     var container=document.getElementById("listings");
     container.innerHTML="Loading...";
