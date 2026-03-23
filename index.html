@@ -84,18 +84,40 @@
 
   <h2 id="postTitle"></h2>
 
-  <label for="postType">Listing Type</label>
-  <select id="postType" onchange="updateForm()">
-    <option value="" id="selectType"></option>
-    <option value="rent" id="optRent"></option>
-    <option value="sell" id="optSell"></option>
-    <option value="service" id="optService"></option>
-    <option value="transport" id="optTransport"></option>
-  </select>
+  <!-- Post Listing Form -->
+  <form id="listingForm">
+    <label>Type</label>
+    <input type="text" id="type" required>
 
-  <div id="dynamicForm"></div>
+    <label>Description</label>
+    <input type="text" id="description" required>
 
-  <button id="submitBtn" onclick="submitListing()"></button>
+    <label>Phone</label>
+    <input type="text" id="phone" required>
+
+    <label>Model Number</label>
+    <input type="text" id="model_number">
+
+    <label>Year</label>
+    <input type="number" id="year">
+
+    <label>Condition</label>
+    <input type="text" id="condition">
+
+    <label>Capacity</label>
+    <input type="text" id="capacity">
+
+    <label>Fuel Type</label>
+    <input type="text" id="fuel_type">
+
+    <label>Price</label>
+    <input type="text" id="price_type">
+
+    <label>Availability</label>
+    <input type="text" id="availability">
+
+    <button type="submit">Submit Listing</button>
+  </form>
 
   <div id="listings"></div>
 
@@ -106,12 +128,13 @@
   <p><a href="mailto:machinerymatchmaker@gmail.com" style="color:#f4b400;">Contact Us</a></p>
 </footer>
 
-<script defer>
-  console.log("EML Master Version");
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  /* SUPABASE CONFIG */
-  const SUPABASE_URL = "https://rmdpzvyypnkhadoqoidr.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA";
+  const supabase = createClient(
+    'https://rmdpzvyypnkhadoqoidr.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA'
+  )
 
   /* LANGUAGE */
   var lang = "en";
@@ -125,4 +148,18 @@
     am:{hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",search:"ፈልግ...",searchBtn:"ፈልግ",
         services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
         categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"],
-        postTitle:"ማስታወቂያ አስገባ",selectType:"አይነት ምረ
+        postTitle:"ማስታወቂያ አስገባ",selectType:"አይነት ምረ",submit:"አስገባ",
+        optRent:"ማሽነሪ ኪራይ",optSell:"ማሽነሪ ሽያጭ",
+        optService:"አገልግሎት አቅራቢ",optTransport:"ትራንስፖርት"}
+  };
+
+  function toggleLang(){
+    lang = (lang === "en") ? "am" : "en";
+    renderUI();
+  }
+
+  function renderUI(){
+    const t = T[lang];
+    document.getElementById("hero").innerText = t.hero;
+    document.getElementById("searchInput").placeholder = t.search;
+    document.getElementById("searchBtn").
