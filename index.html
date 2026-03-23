@@ -10,7 +10,7 @@
   <link rel="canonical" href="https://ethio-machinery-link.vercel.app">
 
   <!-- Security Meta -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co; img-src 'self' https://*.supabase.co data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://*.supabase.co;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co; img-src 'self' https://*.supabase.co data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
 
@@ -30,25 +30,41 @@
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-  <!-- Preload critical assets -->
-  <link rel="preload" href="/favicon.ico" as="image">
-
   <!-- Minified CSS -->
   <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff}
-    header{background:#f4b400;color:#000;text-align:center;padding:20px}
-    header h1{margin:0;font-size:24px}
-    .container{padding:20px}
+    :root{
+      --accent:#f4b400;
+      --bg:#111;
+      --card:#222;
+      --muted:#aaa;
+      --text:#fff;
+      --radius:10px;
+    }
+    html,body{height:100%}
+    body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    header{background:var(--accent);color:#000;text-align:center;padding:18px 12px}
+    header h1{margin:0;font-size:22px}
+    header p{margin:6px 0 0;font-size:14px}
+    .container{max-width:1100px;margin:0 auto;padding:20px}
     .search-box{display:flex;gap:10px;margin-top:15px}
     .search-box input{flex:1;padding:12px;border-radius:8px;border:none}
-    button{padding:10px;border:none;border-radius:6px;cursor:pointer;background:#f4b400}
-    select,input{width:100%;padding:10px;margin-top:8px;border-radius:6px;border:none}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:20px}
-    .card{background:#222;padding:15px;border-radius:10px;text-align:center;cursor:pointer}
-    .listing-card{background:#222;padding:15px;border-radius:10px;margin-top:10px;cursor:pointer}
-    .tag{background:#f4b400;color:#000;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-block;margin-bottom:5px}
-    img{max-width:100%;border-radius:8px;margin-bottom:10px}
+    .search-box button{padding:12px 16px;border-radius:8px;border:none;background:var(--accent);cursor:pointer}
+    button{padding:10px;border:none;border-radius:6px;cursor:pointer;background:var(--accent);color:#000}
+    select,input{width:100%;padding:10px;margin-top:8px;border-radius:6px;border:none;background:#1a1a1a;color:var(--text)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:20px}
+    .card{background:var(--card);padding:15px;border-radius:var(--radius);text-align:center;cursor:pointer}
+    .listing-card{background:var(--card);padding:15px;border-radius:var(--radius);margin-top:10px;cursor:default;display:flex;gap:12px;align-items:flex-start}
+    .listing-card img{width:140px;height:100px;object-fit:cover;border-radius:8px}
+    .listing-meta{flex:1;text-align:left}
+    .tag{background:var(--accent);color:#000;padding:4px 8px;border-radius:6px;font-size:12px;display:inline-block;margin-bottom:6px}
+    .muted{color:var(--muted);font-size:13px}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
     .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+    .notice{padding:10px;border-radius:8px;margin-top:10px}
+    .success{background:#163a0f;color:#b7f2a1}
+    .error{background:#3a0f0f;color:#f2b7b7}
+    footer{margin-top:30px}
+    a{color:var(--accent);text-decoration:none}
   </style>
 </head>
 
@@ -57,7 +73,7 @@
 <header role="banner">
   <h1>ኢትዮ ማሽነሪ አገናኝ</h1>
   <p>Ethio Machinery Link (EML)</p>
-  <button onclick="toggleLang()" aria-label="Toggle Language" style="font-size:16px;background:none;border:none;cursor:pointer;">
+  <button onclick="toggleLang()" aria-label="Toggle Language" style="font-size:14px;background:none;border:none;cursor:pointer;">
     🌐 አማ/EN
   </button>
 </header>
@@ -66,100 +82,323 @@
 
   <h2 id="hero"></h2>
 
-  <div class="search-box">
+  <div class="search-box" aria-label="Search machinery">
     <label for="searchInput" class="visually-hidden">Search</label>
-    <input id="searchInput" aria-label="Search machinery">
-    <button id="searchBtn" onclick="search()"></button>
+    <input id="searchInput" placeholder="" aria-label="Search machinery">
+    <button id="searchBtn" onclick="search()">Search</button>
   </div>
 
   <section aria-labelledby="servicesTitle">
     <h2 id="servicesTitle">Services</h2>
-    <div id="services" class="grid"></div>
+    <div id="services" class="grid" role="list"></div>
   </section>
 
   <section aria-labelledby="categoriesTitle">
     <h2 id="categoriesTitle">Categories</h2>
-    <div id="categories" class="grid"></div>
+    <div id="categories" class="grid" role="list"></div>
   </section>
 
   <h2 id="postTitle"></h2>
 
   <!-- Post Listing Form -->
-  <form id="listingForm">
-    <label>Type</label>
-    <input type="text" id="type" required>
+  <form id="listingForm" class="notice" aria-label="Post listing form">
+    <div class="form-grid">
+      <div>
+        <label for="type">Type</label>
+        <input type="text" id="type" required placeholder="">
+      </div>
+      <div>
+        <label for="price_type">Price</label>
+        <input type="text" id="price_type" placeholder="">
+      </div>
+      <div>
+        <label for="model_number">Model Number</label>
+        <input type="text" id="model_number" placeholder="">
+      </div>
+      <div>
+        <label for="year">Year</label>
+        <input type="number" id="year" placeholder="">
+      </div>
+      <div>
+        <label for="condition">Condition</label>
+        <input type="text" id="condition" placeholder="">
+      </div>
+      <div>
+        <label for="capacity">Capacity</label>
+        <input type="text" id="capacity" placeholder="">
+      </div>
+      <div>
+        <label for="fuel_type">Fuel Type</label>
+        <input type="text" id="fuel_type" placeholder="">
+      </div>
+      <div>
+        <label for="availability">Availability</label>
+        <input type="text" id="availability" placeholder="">
+      </div>
+      <div style="grid-column:1/-1">
+        <label for="description">Description</label>
+        <input type="text" id="description" required placeholder="">
+      </div>
+      <div>
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" required placeholder="">
+      </div>
+    </div>
 
-    <label>Description</label>
-    <input type="text" id="description" required>
-
-    <label>Phone</label>
-    <input type="text" id="phone" required>
-
-    <label>Model Number</label>
-    <input type="text" id="model_number">
-
-    <label>Year</label>
-    <input type="number" id="year">
-
-    <label>Condition</label>
-    <input type="text" id="condition">
-
-    <label>Capacity</label>
-    <input type="text" id="capacity">
-
-    <label>Fuel Type</label>
-    <input type="text" id="fuel_type">
-
-    <label>Price</label>
-    <input type="text" id="price_type">
-
-    <label>Availability</label>
-    <input type="text" id="availability">
-
-    <button type="submit">Submit Listing</button>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+      <button type="submit">Submit Listing</button>
+      <div id="formFeedback" role="status" aria-live="polite"></div>
+    </div>
   </form>
 
-  <div id="listings"></div>
+  <div id="listings" aria-live="polite" style="margin-top:20px"></div>
 
 </main>
 
 <footer role="contentinfo" style="text-align:center;padding:20px;background:#222;color:#aaa;">
   <p>&copy; 2026 Ethio Machinery Link (EML). All rights reserved.</p>
-  <p><a href="mailto:machinerymatchmaker@gmail.com" style="color:#f4b400;">Contact Us</a></p>
+  <p><a href="mailto:machinerymatchmaker@gmail.com">Contact Us</a></p>
 </footer>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const supabase = createClient(
-    'https://rmdpzvyypnkhadoqoidr.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA'
-  )
+  /* ---------- CONFIG ---------- */
+  const SUPABASE_URL = 'https://rmdpzvyypnkhadoqoidr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtZHB6dnl5cG5raGFkb3FvaWRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjI4OTUsImV4cCI6MjA4OTM5ODg5NX0.U02QOs4Cqq0TxB1mMu8oo_lOlv-4m6lBZfgk9Bsa8vA'; // Replace with env var in production
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  /* LANGUAGE */
-  var lang = "en";
-  var T = {
-    en:{hero:"Find, Rent, Buy Machinery",search:"Search...",searchBtn:"Search",
-        services:["Rent","Buy","Sell","Service","Transport"],
-        categories:["Excavator","Bulldozer","Crane","Loader"],
-        postTitle:"Post Listing",selectType:"Select Type",submit:"Submit",
-        optRent:"Rent Machinery",optSell:"Sell Machinery",
-        optService:"Service Provider",optTransport:"Transport"},
-    am:{hero:"ማሽነሪ ፈልግ ኪራይ ግዢ",search:"ፈልግ...",searchBtn:"ፈልግ",
-        services:["ኪራይ","ግዢ","ሽያጭ","አገልግሎት","ትራንስፖርት"],
-        categories:["ኤክስካቫተር","ቡልዶዘር","ክሬን","ሎደር"],
-        postTitle:"ማስታወቂያ አስገባ",selectType:"አይነት ምረ",submit:"አስገባ",
-        optRent:"ማሽነሪ ኪራይ",optSell:"ማሽነሪ ሽያጭ",
-        optService:"አገልግሎት አቅራቢ",optTransport:"ትራንስፖርት"}
+  /* ---------- I18N ---------- */
+  let lang = 'en';
+  const T = {
+    en: {
+      hero: 'Find, Rent, Buy Machinery',
+      search: 'Search...',
+      searchBtn: 'Search',
+      services: ['Rent', 'Buy', 'Sell', 'Service', 'Transport'],
+      categories: ['Excavator', 'Bulldozer', 'Crane', 'Loader'],
+      postTitle: 'Post Listing',
+      submitSuccess: 'Listing added successfully.',
+      submitError: 'Error adding listing.',
+      noListings: 'No listings yet.'
+    },
+    am: {
+      hero: 'ማሽነሪ ፈልግ ኪራይ ግዢ',
+      search: 'ፈልግ...',
+      searchBtn: 'ፈልግ',
+      services: ['ኪራይ', 'ግዢ', 'ሽያጭ', 'አገልግሎት', 'ትራንስፖርት'],
+      categories: ['ኤክስካቫተር', 'ቡልዶዘር', 'ክሬን', 'ሎደር'],
+      postTitle: 'ማስታወቂያ አስገባ',
+      submitSuccess: 'ማስታወቂያው ተጨምሯል።',
+      submitError: 'ማስታወቂያ ማስገባት አልተቻለም።',
+      noListings: 'እስካሁን ምንም ማስታወቂያ የለም።'
+    }
   };
 
-  function toggleLang(){
-    lang = (lang === "en") ? "am" : "en";
+  /* ---------- UI RENDER ---------- */
+  function toggleLang() {
+    lang = (lang === 'en') ? 'am' : 'en';
     renderUI();
   }
 
-  function renderUI(){
+  function renderUI() {
     const t = T[lang];
-    document.getElementById("hero").innerText = t.hero;
-    document.getElementById("searchInput").placeholder = t.search;
-    document.getElementById("searchBtn").
+    document.getElementById('hero').innerText = t.hero;
+    document.getElementById('searchInput').placeholder = t.search;
+    document.getElementById('searchBtn').innerText = t.searchBtn;
+    document.getElementById('postTitle').innerText = t.postTitle;
+
+    // Services
+    const servicesDiv = document.getElementById('services');
+    servicesDiv.innerHTML = '';
+    t.services.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerText = s;
+      servicesDiv.appendChild(el);
+    });
+
+    // Categories
+    const categoriesDiv = document.getElementById('categories');
+    categoriesDiv.innerHTML = '';
+    t.categories.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerText = c;
+      categoriesDiv.appendChild(el);
+    });
+
+    // Form placeholders and labels (basic)
+    document.getElementById('type').placeholder = (lang === 'en') ? 'e.g., Excavator' : 'ለምሳሌ ኤክስካቫተር';
+    document.getElementById('description').placeholder = (lang === 'en') ? 'Short description' : 'አጭር መግለጫ';
+    document.getElementById('phone').placeholder = (lang === 'en') ? '+2519...' : '+2519...';
+    document.getElementById('price_type').placeholder = (lang === 'en') ? 'ETB 50000/hr' : 'ETB 50000/ሰ.';
+    document.querySelector('#listingForm button').innerText = (lang === 'en') ? 'Submit Listing' : 'ማስገባ';
+  }
+
+  /* ---------- LISTINGS: FETCH & RENDER ---------- */
+  async function loadListings({ query = '', limit = 50 } = {}) {
+    // Basic search across type, description, model_number, price_type
+    let builder = supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (query && query.trim().length > 0) {
+      const q = query.trim();
+      // Use ilike for case-insensitive partial match
+      builder = builder.or(
+        `type.ilike.%${q}%,description.ilike.%${q}%,model_number.ilike.%${q}%,price_type.ilike.%${q}%`
+      );
+    }
+
+    const { data, error } = await builder;
+    const listingsDiv = document.getElementById('listings');
+    listingsDiv.innerHTML = '';
+
+    if (error) {
+      listingsDiv.innerHTML = `<div class="error notice">Error loading listings.</div>`;
+      console.error(error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listingsDiv.innerHTML = `<div class="muted">${T[lang].noListings}</div>`;
+      return;
+    }
+
+    // Render each listing
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'listing-card';
+
+      // Optional image if you have image_url field
+      const img = document.createElement('img');
+      img.src = item.image_url || '/logo.png';
+      img.alt = item.type || 'machinery';
+      card.appendChild(img);
+
+      const meta = document.createElement('div');
+      meta.className = 'listing-meta';
+
+      const tag = document.createElement('div');
+      tag.className = 'tag';
+      tag.innerText = item.type || '—';
+      meta.appendChild(tag);
+
+      const title = document.createElement('h3');
+      title.style.margin = '6px 0';
+      title.innerText = `${item.model_number || ''} ${item.year ? '(' + item.year + ')' : ''}`.trim();
+      meta.appendChild(title);
+
+      const desc = document.createElement('p');
+      desc.className = 'muted';
+      desc.innerText = item.description || '';
+      meta.appendChild(desc);
+
+      const specs = document.createElement('p');
+      specs.innerHTML = `<strong>Condition:</strong> ${item.condition || '—'} &nbsp; <strong>Fuel:</strong> ${item.fuel_type || '—'}`;
+      meta.appendChild(specs);
+
+      const price = document.createElement('p');
+      price.innerHTML = `<strong>Price:</strong> ${item.price_type || '—'} &nbsp; <strong>Availability:</strong> ${item.availability || '—'}`;
+      meta.appendChild(price);
+
+      const contact = document.createElement('p');
+      contact.innerHTML = `<strong>Phone:</strong> <a href="tel:${item.phone}" style="color:var(--accent)">${item.phone || '—'}</a>`;
+      meta.appendChild(contact);
+
+      card.appendChild(meta);
+      listingsDiv.appendChild(card);
+    });
+  }
+
+  /* ---------- FORM SUBMISSION ---------- */
+  document.getElementById('listingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const feedback = document.getElementById('formFeedback');
+    feedback.innerHTML = '';
+    feedback.className = '';
+
+    const payload = {
+      type: document.getElementById('type').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      model_number: document.getElementById('model_number').value.trim(),
+      year: document.getElementById('year').value ? Number(document.getElementById('year').value) : null,
+      condition: document.getElementById('condition').value.trim(),
+      capacity: document.getElementById('capacity').value.trim(),
+      fuel_type: document.getElementById('fuel_type').value.trim(),
+      price_type: document.getElementById('price_type').value.trim(),
+      availability: document.getElementById('availability').value.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    // Basic validation
+    if (!payload.type || !payload.description || !payload.phone) {
+      feedback.className = 'error notice';
+      feedback.innerText = (lang === 'en') ? 'Please fill required fields.' : 'እባክዎ ያስፈልጉትን መረጃ ይሙሉ።';
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('listings')
+      .insert([payload])
+      .select();
+
+    if (error) {
+      feedback.className = 'error notice';
+      feedback.innerText = T[lang].submitError;
+      console.error(error);
+      return;
+    }
+
+    feedback.className = 'success notice';
+    feedback.innerText = T[lang].submitSuccess;
+
+    // Reset form (keep minimal fields if desired)
+    e.target.reset();
+
+    // Refresh listings
+    await loadListings();
+    // Clear feedback after a short delay
+    setTimeout(() => {
+      feedback.className = '';
+      feedback.innerText = '';
+    }, 3500);
+  });
+
+  /* ---------- SEARCH ---------- */
+  function search() {
+    const q = document.getElementById('searchInput').value || '';
+    loadListings({ query: q });
+  }
+
+  /* ---------- INIT ---------- */
+  async function init() {
+    renderUI();
+    await loadListings();
+
+    // Optional: realtime subscription to listings table (live updates)
+    try {
+      supabase
+        .channel('public:listings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, payload => {
+          // Simple strategy: reload on any change
+          loadListings();
+        })
+        .subscribe();
+    } catch (e) {
+      // ignore if realtime not available
+      console.warn('Realtime subscription failed or not available', e);
+    }
+  }
+
+  // Start
+  init();
+
+  // Expose toggle for header button
+  window.toggleLang = toggleLang;
+  window.search = search;
+</script>
